@@ -78,6 +78,7 @@ header{padding:26px 0 10px;display:flex;flex-wrap:wrap;align-items:center;gap:14
   padding:5px 14px;font-size:12px;color:var(--dim);font-weight:700;display:flex;gap:7px;align-items:center}
 .chip b{color:var(--line);font-family:'Teko',sans-serif;font-size:18px;font-weight:600;line-height:1;transform:translateY(1px)}
 .chip.hot b{color:var(--orange2)}
+.chip.wide{grid-column:1/-1}
 .streak-dots{display:flex;gap:3px;align-items:center}
 .streak-dots i{width:9px;height:9px;border-radius:2px;display:block}
 .streak-dots i.w{background:var(--win)} .streak-dots i.l{background:var(--loss)}
@@ -226,8 +227,8 @@ footer{margin-top:34px;text-align:center;font-size:11px;color:var(--dim);letter-
   .sb-mid{padding:0 2px}
   .sb-mid .pct{font-size:26px}
   .sb-mid .pct-lbl{font-size:8px;letter-spacing:.2em}
-  .sb-sub{gap:6px;margin-top:10px}
-  .chip{padding:5px 11px;font-size:11px}
+  .sb-sub{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+  .chip{padding:7px 8px;font-size:11px;justify-content:center}
   .chip b{font-size:16px}
 
   /* tabs: replaced by sticky pulldown on mobile */
@@ -519,14 +520,17 @@ function renderScoreboard(){
     else if(gs[i].result===sType) streak++;
     else break;
   }
+  let maxWinStreak = 0, cur = 0;
+  gs.forEach(g=>{ if(g.result==='W'){ cur++; maxWinStreak = Math.max(maxWinStreak, cur); } else cur = 0; });
   const last5 = gs.slice(-5).map(g=>`<i class="${g.result==='W'?'w':'l'}" title="${esc(g.opponent)}"></i>`).join('');
   $('#sbChips').innerHTML = `
     <div class="chip">総得点 <b>${fmtC(pf)}</b></div>
     <div class="chip">総失点 <b>${fmtC(pa)}</b></div>
     <div class="chip">平均得点 <b>${(pf/gs.length).toFixed(1)}</b></div>
     <div class="chip">平均失点 <b>${(pa/gs.length).toFixed(1)}</b></div>
+    <div class="chip">最高連勝数 <b>${maxWinStreak}</b></div>
     <div class="chip hot">${sType==='W'?'連勝中':'連敗中'} <b>${streak}</b></div>
-    <div class="chip">直近5試合 <span class="streak-dots">${last5}</span></div>`;
+    <div class="chip wide">直近5試合 <span class="streak-dots">${last5}</span></div>`;
 }
 
 /* ---------- team tab ---------- */
