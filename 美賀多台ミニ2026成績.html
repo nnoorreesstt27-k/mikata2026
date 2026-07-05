@@ -651,10 +651,13 @@ function renderPlayerGamesTable(s){
   }, 'date', 'asc');
   $('#playerGamesTable tbody').innerHTML = rows.map(r=>{
     const share = Math.round(r.share*100);
+    const ptsCell = r.pts>=10 ? `<span style="color:var(--orange2)">${r.pts}</span>` : r.pts;
+    const qCell = r.q===4 ? `<span style="color:var(--orange2)">${fmtN(r.q)}</span>` : fmtN(r.q);
+    const fCell = r.f>=5 ? `<span style="color:var(--orange2)">${r.f}</span>` : r.f;
     return `<tr><td>${esc(r.g.date)}</td><td>${esc(r.g.opponent)}</td>
       <td><span class="tag ${r.g.result==='W'?'w':'l'}">${r.g.result==='W'?'勝':'負'}</span></td>
-      <td class="num" style="color:var(--orange2)">${r.pts}</td>
-      <td class="num">${fmtN(r.q)}</td><td class="num">${r.f}</td>
+      <td class="num">${ptsCell}</td>
+      <td class="num">${qCell}</td><td class="num">${fCell}</td>
       <td><div class="rank-bar" style="min-width:80px"><i style="width:${share}%"></i></div><span class="muted" style="font-size:11px">${share}%</span></td></tr>`;
   }).join('');
   bindSort('#playerGamesTable', ()=>renderPlayerGamesTable(s));
@@ -695,7 +698,8 @@ window.addEventListener('resize', ()=>{
 
 function renderPlayerGameDetail(gi){
   const g = D.games[gi], p = curPlayer;
-  const pts = g.pts[p]||0, share = g.us? Math.round(pts/g.us*100) : 0;
+  const pts = g.pts[p]||0, q = g.q[p]||0, f = g.f[p]||0, share = g.us? Math.round(pts/g.us*100) : 0;
+  const ptsHi = pts>=10, qHi = q===4, fHi = f>=5;
   $('#playerGameDetail').innerHTML = `
     <div class="gd-head">
       <span class="gd-score">${g.us}<span class="vs">-</span>${g.them}</span>
@@ -703,9 +707,9 @@ function renderPlayerGameDetail(gi){
       <span class="muted" style="font-size:12px">vs ${esc(g.opponent)}｜${esc(g.type)}｜${esc(g.venue)}</span>
     </div>
     <div class="grid4" style="grid-template-columns:repeat(4,1fr)">
-      <div class="stat-box accent"><div class="v">${pts}</div><div class="k">得点</div></div>
-      <div class="stat-box"><div class="v">${fmtN(g.q[p]||0)}</div><div class="k">出場Q</div></div>
-      <div class="stat-box"><div class="v">${g.f[p]||0}</div><div class="k">ファウル</div></div>
+      <div class="stat-box${ptsHi?' accent':''}"><div class="v">${pts}</div><div class="k">得点</div></div>
+      <div class="stat-box${qHi?' accent':''}"><div class="v">${fmtN(q)}</div><div class="k">出場Q</div></div>
+      <div class="stat-box${fHi?' accent':''}"><div class="v">${f}</div><div class="k">ファウル</div></div>
       <div class="stat-box"><div class="v">${share}<small>%</small></div><div class="k">チーム得点比</div></div>
     </div>`;
 }
