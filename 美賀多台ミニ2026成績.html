@@ -268,21 +268,34 @@ footer{margin-top:34px;text-align:center;font-size:11px;color:var(--dim);letter-
   #typeTable .muted,#topGamesTable .muted{font-size:10px}
   #topGamesTable .opp-name{max-width:60px}
 
-  /* games table (試合結果一覧): all 6 columns fit the screen width, no horizontal scroll */
-  #gamesTable{min-width:0;width:100%;table-layout:auto}
-  #gamesTable th,#gamesTable td{padding:7px 2px;font-size:9.5px;white-space:normal;word-break:break-word}
-  #gamesTable .opp-name{max-width:44px;white-space:normal;word-break:break-word}
-  #gamesTable .num{font-size:12.5px}
-  #gamesTable .tag{padding:2px 5px;font-size:9.5px}
+  /* games table (試合結果一覧): fixed column widths guarantee it always fits, no scrollbar */
+  #gamesTable{min-width:0;width:100%;table-layout:fixed}
+  #gamesTable th,#gamesTable td{padding:6px 2px;font-size:9px;white-space:normal;word-break:break-word;overflow-wrap:break-word}
+  #gamesTable th:nth-child(1),#gamesTable td:nth-child(1){width:13%}
+  #gamesTable th:nth-child(2),#gamesTable td:nth-child(2){width:19%}
+  #gamesTable th:nth-child(3),#gamesTable td:nth-child(3){width:16%}
+  #gamesTable th:nth-child(4),#gamesTable td:nth-child(4){width:12%}
+  #gamesTable th:nth-child(5),#gamesTable td:nth-child(5){width:20%}
+  #gamesTable th:nth-child(6),#gamesTable td:nth-child(6){width:20%}
+  #gamesTable .opp-name{max-width:100%;white-space:normal;word-break:break-word;display:inline}
+  #gamesTable .num{font-size:11.5px}
+  #gamesTable .tag{padding:2px 4px;font-size:9px}
 
-  /* player games table (個人成績 出場試合の成績一覧): all 7 columns fit the screen width */
-  #playerGamesTable{min-width:0;width:100%;table-layout:auto}
-  #playerGamesTable th,#playerGamesTable td{padding:7px 2px;font-size:9.5px;white-space:normal;word-break:break-word}
-  #playerGamesTable .opp-name{max-width:40px;white-space:normal;word-break:break-word}
-  #playerGamesTable .num{font-size:12.5px}
-  #playerGamesTable .tag{padding:2px 5px;font-size:9.5px}
-  #playerGamesTable .share-bar{min-width:32px}
-  #playerGamesTable .muted{font-size:9px}
+  /* player games table (個人成績 出場試合の成績一覧): fixed column widths guarantee it always fits */
+  #playerGamesTable{min-width:0;width:100%;table-layout:fixed}
+  #playerGamesTable th,#playerGamesTable td{padding:6px 2px;font-size:9px;white-space:normal;word-break:break-word;overflow-wrap:break-word}
+  #playerGamesTable th:nth-child(1),#playerGamesTable td:nth-child(1){width:11%}
+  #playerGamesTable th:nth-child(2),#playerGamesTable td:nth-child(2){width:16%}
+  #playerGamesTable th:nth-child(3),#playerGamesTable td:nth-child(3){width:10%}
+  #playerGamesTable th:nth-child(4),#playerGamesTable td:nth-child(4){width:11%}
+  #playerGamesTable th:nth-child(5),#playerGamesTable td:nth-child(5){width:11%}
+  #playerGamesTable th:nth-child(6),#playerGamesTable td:nth-child(6){width:11%}
+  #playerGamesTable th:nth-child(7),#playerGamesTable td:nth-child(7){width:30%}
+  #playerGamesTable .opp-name{max-width:100%;white-space:normal;word-break:break-word;display:inline}
+  #playerGamesTable .num{font-size:11.5px}
+  #playerGamesTable .tag{padding:2px 4px;font-size:9px}
+  #playerGamesTable .share-bar{width:100%;min-width:0}
+  #playerGamesTable .muted{font-size:8.5px}
 
   /* margin chart auto-fits to screen width (thin bars, all games visible) */
 
