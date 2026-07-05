@@ -400,11 +400,7 @@ footer{margin-top:34px;text-align:center;font-size:11px;color:var(--dim);letter-
 
 <!-- ===== RANKING TAB ===== -->
 <div id="tab-rank" class="tab-page hidden">
-  <div class="pills" id="rankScopePills">
-    <button class="pill on" data-scope="all">全試合</button>
-    <button class="pill" data-scope="official">大会のみ</button>
-    <button class="pill" data-scope="practice">練習試合のみ</button>
-  </div>
+  <div class="pills" id="rankScopePills"></div>
   <div class="grid2">
     <div class="card"><h2>総得点</h2><div id="rankPts"></div></div>
     <div class="card"><h2>平均得点/試合</h2><div id="rankAvg"></div></div>
@@ -419,13 +415,13 @@ footer{margin-top:34px;text-align:center;font-size:11px;color:var(--dim);letter-
 
 <!-- ===== GAMES TAB ===== -->
 <div id="tab-games" class="tab-page hidden">
-  <div class="pills" id="gameFilterPills"></div>
   <div class="card">
     <h2>1試合を選んで見る</h2>
     <select id="gameSel" style="width:100%;margin-bottom:6px" aria-label="試合を選択"></select>
     <p class="muted" style="font-size:10px;margin-bottom:12px;text-align:right">〇：勝利　×：敗北</p>
     <div id="gameDetailBody"></div>
   </div>
+  <div class="pills" id="gameFilterPills"></div>
   <div class="card">
     <h2>試合結果一覧</h2>
     <div class="tbl-scroll"><table id="gamesTable">
@@ -449,7 +445,8 @@ let curPlayer = null, rankScope = 'all', gameFilter = 'all';
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmtN = v => (v % 1 ? v.toFixed(1) : String(v));
-const isOfficial = g => !g.type.includes('練習');
+const typeLabel = t => t.startsWith('交流戦') ? t : t.replace(/（.*?）/,'');
+const GAME_TYPE_ORDER = ['新人戦','春季大会','優勝大会','前期リーグ戦','あじさいカップ','練習試合','交流戦（人数不足）'];
 const jd = s => { const [y,m,d] = s.split('-'); return `${Number(m)}/${Number(d)}`; };
 
 function toast(msg){
@@ -552,7 +549,7 @@ function renderTopGamesTable(){
       <td>${jd(g.date)}</td>
       <td><span class="opp-name">${esc(g.opponent)}</span></td>
       <td class="num">${g.us} - ${g.them}</td>
-      <td><span class="tag ${g.result==='W'?'w':'l'}">${g.result==='W'?'勝ち':'負け'}</span></td></tr>`).join('');
+      <td><span class="tag ${g.result==='W'?'w':'l'}">${g.result==='W'?'勝':'負'}</span></td></tr>`).join('');
   $('#topGamesTable tbody').querySelectorAll('tr').forEach(tr=>{
     tr.addEventListener('click', ()=>{ switchTab('games'); showGameDetail(Number(tr.dataset.i), true); });
   });
@@ -702,7 +699,7 @@ function renderPlayerGameDetail(gi){
   $('#playerGameDetail').innerHTML = `
     <div class="gd-head">
       <span class="gd-score">${g.us}<span class="vs">-</span>${g.them}</span>
-      <span class="tag ${g.result==='W'?'w':'l'}" style="font-size:13px">${g.result==='W'?'勝ち':'負け'}</span>
+      <span class="tag ${g.result==='W'?'w':'l'}" style="font-size:13px">${g.result==='W'?'勝':'負'}</span>
       <span class="muted" style="font-size:12px">vs ${esc(g.opponent)}｜${esc(g.type)}｜${esc(g.venue)}</span>
     </div>
     <div class="grid4" style="grid-template-columns:repeat(4,1fr)">
@@ -714,9 +711,18 @@ function renderPlayerGameDetail(gi){
 }
 
 /* ---------- ranking tab ---------- */
+function renderRankScopePills(){
+  const present = new Set(D.games.map(g=>typeLabel(g.type)));
+  const types = ['all', ...GAME_TYPE_ORDER.filter(t=>present.has(t))];
+  $('#rankScopePills').innerHTML = types.map(t=>
+    `<button class="pill ${t===rankScope?'on':''}" data-scope="${esc(t)}">${t==='all'?'すべて':esc(t)}</button>`).join('');
+  $('#rankScopePills').querySelectorAll('.pill').forEach(b=>{
+    b.addEventListener('click', ()=>{ rankScope = b.dataset.scope; renderRankScopePills(); renderRankings(); });
+  });
+}
+
 function renderRankings(){
-  const games = rankScope==='all' ? D.games :
-    rankScope==='official' ? D.games.filter(isOfficial) : D.games.filter(g=>!isOfficial(g));
+  const games = rankScope==='all' ? D.games : D.games.filter(g=>typeLabel(g.type)===rankScope);
   const stats = D.players.map(p=>{
     const s = playerAgg(p, games);
     const bestG = s.app.reduce((b,g)=> (g.pts[p]||0) > (b? b.pts[p]||0 : -1) ? g : b, null);
@@ -746,16 +752,11 @@ function renderRankings(){
   board('#rankF',     [...stats].sort((a,b)=>b.f-a.f), 'f', v=>v);
   board('#rankFPG',   [...stats].sort((a,b)=>b.fpg-a.fpg), 'fpg', v=>v.toFixed(1));
 }
-$('#rankScopePills').addEventListener('click', e=>{
-  const b = e.target.closest('.pill'); if(!b) return;
-  rankScope = b.dataset.scope;
-  $('#rankScopePills').querySelectorAll('.pill').forEach(x=>x.classList.toggle('on', x===b));
-  renderRankings();
-});
 
 /* ---------- games tab ---------- */
 function renderGameFilters(){
-  const types = ['all', ...new Set(D.games.map(g=>g.type.replace(/（.*?）/,'')))];
+  const present = new Set(D.games.map(g=>typeLabel(g.type)));
+  const types = ['all', ...GAME_TYPE_ORDER.filter(t=>present.has(t))];
   $('#gameFilterPills').innerHTML = types.map(t=>
     `<button class="pill ${t===gameFilter?'on':''}" data-t="${esc(t)}">${t==='all'?'すべて':esc(t)}</button>`).join('');
   $('#gameFilterPills').querySelectorAll('.pill').forEach(b=>{
@@ -765,7 +766,7 @@ function renderGameFilters(){
 
 function renderGamesTable(){
   const list = D.games.map((g,i)=>({g,i, date:g.date, type:g.type, venue:g.venue, opp:g.opponent, us:g.us, res:g.result==='W'?1:0}))
-    .filter(({g}) => gameFilter==='all' || g.type.replace(/（.*?）/,'')===gameFilter);
+    .filter(({g}) => gameFilter==='all' || typeLabel(g.type)===gameFilter);
   const rows = applySort(list, '#gamesTable', {
     date: r=>r.date, opp: r=>r.opp, us: r=>r.us, res: r=>r.res, type: r=>r.type, venue: r=>r.venue
   }, 'date', 'asc');
@@ -774,7 +775,7 @@ function renderGamesTable(){
       <td>${jd(g.date)}</td>
       <td><span class="opp-name">${esc(g.opponent)}</span></td>
       <td class="num">${g.us} - ${g.them}</td>
-      <td><span class="tag ${g.result==='W'?'w':'l'}">${g.result==='W'?'勝ち':'負け'}</span></td>
+      <td><span class="tag ${g.result==='W'?'w':'l'}">${g.result==='W'?'勝':'負'}</span></td>
       <td class="muted">${esc(g.type)}</td><td class="muted">${esc(g.venue)}</td></tr>`).join('');
   $('#gamesTable tbody').querySelectorAll('tr').forEach(tr=>{
     tr.addEventListener('click', ()=>{ $('#gameSel').value = tr.dataset.i; showGameDetail(Number(tr.dataset.i), true); });
@@ -791,25 +792,41 @@ function renderGameSelector(){
 }
 
 function showGameDetail(i, scroll){
-  const g = D.games[i];
   $('#gameSel').value = i;
+  renderGameDetailBody(i);
+  if(scroll) $('#gameDetailBody').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function renderGameDetailBody(i){
+  const g = D.games[i];
   const members = D.players.filter(p => p in g.q || p in g.pts || p in g.f);
   const top = members.reduce((b,p)=> (g.pts[p]||0) > (g.pts[b]||0) ? p : b, members[0]);
+  const list = members.map(p=>({p, pts:g.pts[p]||0, q:g.q[p]||0, f:g.f[p]||0, share: g.us ? (g.pts[p]||0)/g.us : 0}));
+  const rows = applySort(list, '#gameDetailTable', {
+    player: r=>r.p, pts: r=>r.pts, q: r=>r.q, f: r=>r.f, share: r=>r.share
+  }, 'pts', 'desc');
   $('#gameDetailBody').innerHTML = `
     <div class="gd-head">
       <span class="gd-score">${g.us}<span class="vs">-</span>${g.them}</span>
-      <span class="tag ${g.result==='W'?'w':'l'}" style="font-size:13px">${g.result==='W'?'勝ち':'負け'}</span>
+      <span class="tag ${g.result==='W'?'w':'l'}" style="font-size:13px">${g.result==='W'?'勝':'負'}</span>
       <span class="muted" style="font-size:12px">vs ${esc(g.opponent)}｜${esc(g.type)}｜${esc(g.venue)}</span>
     </div>
-    <div class="tbl-scroll"><table>
-      <thead><tr><th>選手</th><th>得点</th><th>出場Q</th><th>ファウル</th><th></th></tr></thead>
-      <tbody>${members.sort((a,b)=>(g.pts[b]||0)-(g.pts[a]||0)).map(p=>`
-        <tr><td style="font-weight:900">${esc(p)} ${p===top && (g.pts[p]||0)>0 ?'<span title="この試合の最多得点">⭐</span>':''}</td>
-        <td class="num" style="color:var(--orange2)">${g.pts[p]||0}</td>
-        <td class="num">${fmtN(g.q[p]||0)}</td><td class="num">${g.f[p]||0}</td>
-        <td><div class="rank-bar"><i style="width:${g.us?((g.pts[p]||0)/g.us*100).toFixed(0):0}%"></i></div></td></tr>`).join('')}
+    <div class="tbl-scroll"><table id="gameDetailTable">
+      <thead><tr>
+        <th class="sortable" data-key="player">選手</th>
+        <th class="sortable" data-key="pts">得点</th>
+        <th class="sortable" data-key="q">出場Q</th>
+        <th class="sortable" data-key="f">ファウル</th>
+        <th class="sortable" data-key="share">チーム得点比</th></tr></thead>
+      <tbody>${rows.map(r=>{
+        const share = Math.round(r.share*100);
+        return `<tr><td style="font-weight:900">${esc(r.p)} ${r.p===top && r.pts>0 ?'<span title="この試合の最多得点">⭐</span>':''}</td>
+        <td class="num" style="color:var(--orange2)">${r.pts}</td>
+        <td class="num">${fmtN(r.q)}</td><td class="num">${r.f}</td>
+        <td><div class="rank-bar" style="min-width:80px"><i style="width:${share}%"></i></div><span class="muted" style="font-size:11px">${share}%</span></td></tr>`;
+      }).join('')}
       </tbody></table></div>`;
-  if(scroll) $('#gameDetailBody').scrollIntoView({behavior:'smooth', block:'nearest'});
+  bindSort('#gameDetailTable', ()=>renderGameDetailBody(i));
 }
 
 /* ---------- tabs ---------- */
@@ -888,7 +905,7 @@ function parseSheet(rows){
 /* ---------- boot ---------- */
 function renderAll(){
   renderScoreboard(); renderMarginChart(); renderTopGamesTable(); renderTypes();
-  renderPlayerTab(); renderRankings(); renderGameFilters(); renderGamesTable();
+  renderPlayerTab(); renderRankScopePills(); renderRankings(); renderGameFilters(); renderGamesTable();
   renderGameSelector();
 }
 renderAll();
