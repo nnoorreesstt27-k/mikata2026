@@ -119,6 +119,8 @@ tr.clickable:hover{background:rgba(245,129,60,.07)}
 .tag.l{background:rgba(255,98,89,.14);color:var(--loss)}
 .tbl-scroll{overflow-x:auto}
 .muted{color:var(--dim)}
+.opp-name{display:inline-block;max-width:160px;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;vertical-align:bottom;font-weight:900}
 .footnote{font-size:10px;color:var(--dim);line-height:1.9;letter-spacing:.02em;margin:2px 4px 16px;opacity:.85}
 
 /* filter pills */
@@ -255,18 +257,23 @@ footer{margin-top:34px;text-align:center;font-size:11px;color:var(--dim);letter-
   td{padding:9px 6px;white-space:nowrap}
   .footnote{font-size:9px;line-height:1.8;margin:0 4px 12px}
   .num{font-size:17px}
-  #oppDetailTable{min-width:460px}
-  #gamesTable{min-width:520px}
   #playerGamesTable{min-width:520px}
   .tbl-scroll{margin:0 -12px;padding:0 12px}
 
   /* first-screen tables fit the screen width (no pinch/scroll needed) */
-  #oppTable,#typeTable{min-width:0;width:100%;font-size:11px;table-layout:auto}
-  #oppTable th,#typeTable th{padding:9px 3px;font-size:8.5px;letter-spacing:.02em}
-  #oppTable td,#typeTable td{padding:8px 3px}
-  #oppTable td:first-child,#typeTable td:first-child{white-space:normal;word-break:break-all;font-size:11px;line-height:1.35}
-  #oppTable .num,#typeTable .num{font-size:15px}
-  #oppTable .muted,#typeTable .muted{font-size:10px}
+  #typeTable,#topGamesTable{min-width:0;width:100%;font-size:11px;table-layout:auto}
+  #typeTable th,#topGamesTable th{padding:9px 3px;font-size:8.5px;letter-spacing:.02em}
+  #typeTable td,#topGamesTable td{padding:8px 3px}
+  #typeTable td:first-child{white-space:normal;word-break:break-all;font-size:11px;line-height:1.35}
+  #typeTable .num,#topGamesTable .num{font-size:15px}
+  #typeTable .muted,#topGamesTable .muted{font-size:10px}
+  #topGamesTable .opp-name{max-width:60px}
+
+  /* games table: 日付～結果 fit one screen without scrolling; 種別・会場 need a swipe */
+  #gamesTable{min-width:0}
+  #gamesTable th,#gamesTable td{padding:8px 5px;font-size:11px}
+  #gamesTable .opp-name{max-width:66px}
+  #gamesTable .num{font-size:15px}
 
   /* margin chart auto-fits to screen width (thin bars, all games visible) */
 
@@ -325,17 +332,17 @@ footer{margin-top:34px;text-align:center;font-size:11px;color:var(--dim);letter-
 
 <div class="mobile-nav">
   <select id="mobileNav" aria-label="メニューを選択">
+    <option value="team" selected>🏆 チーム成績</option>
+    <option value="games">📅 試合別成績</option>
     <option value="player">👤 個人成績</option>
-    <option value="team" selected>🏆 チーム戦績</option>
     <option value="rank">📊 ランキング</option>
-    <option value="games">📅 試合一覧・詳細</option>
   </select>
 </div>
 <nav class="tabs" role="tablist">
-  <button class="on" data-tab="team" role="tab">🏆 チーム戦績</button>
+  <button class="on" data-tab="team" role="tab">🏆 チーム成績</button>
+  <button data-tab="games" role="tab">📅 試合別成績</button>
   <button data-tab="player" role="tab">👤 個人成績</button>
   <button data-tab="rank" role="tab">📊 ランキング</button>
-  <button data-tab="games" role="tab">📅 試合一覧・詳細</button>
 </nav>
 
 <!-- ===== TEAM TAB ===== -->
@@ -347,12 +354,12 @@ footer{margin-top:34px;text-align:center;font-size:11px;color:var(--dim);letter-
   </div>
   <div class="grid2">
     <div class="card">
-      <h2>対戦相手別 戦績</h2>
-      <div class="tbl-scroll"><table id="oppTable">
-        <thead><tr><th class="sortable" data-key="opp">相手</th><th class="sortable" data-key="w">戦績</th><th class="sortable" data-key="pf">得点</th><th class="sortable" data-key="pa">失点</th><th class="sortable" data-key="diff">平均点差</th></tr></thead>
+      <h2>試合別成績</h2>
+      <div class="tbl-scroll"><table id="topGamesTable">
+        <thead><tr><th class="sortable" data-key="date">日付</th><th class="sortable" data-key="opp">相手</th><th class="sortable" data-key="us">スコア</th><th class="sortable" data-key="res">結果</th></tr></thead>
         <tbody></tbody>
       </table></div>
-      <p class="muted" style="font-size:11px;margin-top:8px">行をタップすると、その相手との全試合を表示します。</p>
+      <p class="muted" style="font-size:11px;margin-top:8px">行をタップすると、その試合の詳細を「試合別成績」ページで表示します。</p>
     </div>
     <div class="card">
       <h2>大会・試合種別ごとの成績</h2>
@@ -362,13 +369,6 @@ footer{margin-top:34px;text-align:center;font-size:11px;color:var(--dim);letter-
       </table></div>
       <div id="teamHighlights" style="margin-top:16px"></div>
     </div>
-  </div>
-  <div class="card hidden" id="oppDetailCard">
-    <h2 id="oppDetailTitle">対戦履歴</h2>
-    <div class="tbl-scroll"><table id="oppDetailTable">
-      <thead><tr><th>日付</th><th>種別</th><th>会場</th><th>スコア</th><th>結果</th></tr></thead>
-      <tbody></tbody>
-    </table></div>
   </div>
 </div>
 
@@ -407,12 +407,12 @@ footer{margin-top:34px;text-align:center;font-size:11px;color:var(--dim);letter-
   </div>
   <div class="grid2">
     <div class="card"><h2>総得点</h2><div id="rankPts"></div></div>
-    <div class="card"><h2>1試合平均得点</h2><div id="rankAvg"></div></div>
+    <div class="card"><h2>平均得点/試合</h2><div id="rankAvg"></div></div>
     <div class="card"><h2>平均得点/クォーター</h2><div id="rankPQ"></div></div>
     <div class="card"><h2>自己ベスト（1試合最多得点）</h2><div id="rankBest"></div></div>
     <div class="card"><h2>出場試合数（欠席日以外をカウント）</h2><div id="rankGames"></div></div>
-    <div class="card"><h2>ファウル数</h2><div id="rankF"></div></div>
-    <div class="card"><h2>ファウル数/試合</h2><div id="rankFPG"></div></div>
+    <div class="card"><h2>総ファウル数</h2><div id="rankF"></div></div>
+    <div class="card"><h2>平均ファウル数/試合</h2><div id="rankFPG"></div></div>
   </div>
   <p class="footnote">※出場試合数は、欠席の日を除く試合数の合計です　※クォーター途中で交代した場合は、残分に関わらず出場クォーター0.5とカウントしています</p>
 </div>
@@ -421,25 +421,18 @@ footer{margin-top:34px;text-align:center;font-size:11px;color:var(--dim);letter-
 <div id="tab-games" class="tab-page hidden">
   <div class="pills" id="gameFilterPills"></div>
   <div class="card">
-    <h2>試合一覧</h2>
-    <div class="tbl-scroll"><table id="gamesTable">
-      <thead><tr><th>#</th><th class="sortable" data-key="date">日付</th><th class="sortable" data-key="type">種別</th><th class="sortable" data-key="venue">会場</th><th class="sortable" data-key="opp">相手</th><th class="sortable" data-key="us">スコア</th><th class="sortable" data-key="res">結果</th></tr></thead>
-      <tbody></tbody>
-    </table></div>
-    <p class="muted" style="font-size:11px;margin-top:8px">行をタップすると出場メンバー全員のスタッツを表示します。</p>
-  </div>
-  <div class="card hidden" id="gameDetailCard">
-    <h2 id="gameDetailTitle">試合詳細</h2>
+    <h2>1試合を選んで見る</h2>
+    <select id="gameSel" style="width:100%;margin-bottom:6px" aria-label="試合を選択"></select>
+    <p class="muted" style="font-size:10px;margin-bottom:12px;text-align:right">〇：勝利　×：敗北</p>
     <div id="gameDetailBody"></div>
   </div>
   <div class="card">
-    <h2>データの更新方法</h2>
-    <p style="font-size:13px;line-height:1.9;color:var(--dim)">
-      いつものExcel（<b style="color:var(--line)">スコアTEST.xlsx と同じレイアウト</b>）に最新の試合を追記して、
-      右上の「📂 最新データ読込」ボタンから選ぶだけで、すべての集計・グラフ・ランキングが自動で更新されます。
-      選手の追加・変更もヘッダー行を書きかえれば自動で反映されます。<br>
-      ※読み込んだデータはこのページを開いている間だけ有効です。恒久的に更新したい場合は、更新後のExcelを保存しておき、開くたびに読み込んでください。
-    </p>
+    <h2>試合結果一覧</h2>
+    <div class="tbl-scroll"><table id="gamesTable">
+      <thead><tr><th class="sortable" data-key="date">日付</th><th class="sortable" data-key="opp">相手</th><th class="sortable" data-key="us">スコア</th><th class="sortable" data-key="res">結果</th><th class="sortable" data-key="type">種別</th><th class="sortable" data-key="venue">会場</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p class="muted" style="font-size:11px;margin-top:8px">行をタップすると、その試合の詳細を上に表示します。</p>
   </div>
 </div>
 
@@ -447,7 +440,7 @@ footer{margin-top:34px;text-align:center;font-size:11px;color:var(--dim);letter-
 </div>
 <div id="toast" role="status"></div>
 <script>
-const SEASON_DATA = {"team": "美賀多台", "asOf": "2026-07-04", "players": ["なおと", "たいせい", "しゅんた", "はると", "たける", "こうき", "ちはや", "かえで", "ゆうと"], "games": [{"date": "2025-12-27", "type": "練習試合", "venue": "稗田小学校", "opponent": "稗田", "us": 34, "them": 16, "result": "W", "q": {"なおと": 3, "たいせい": 3, "はると": 3, "たける": 3, "ちはや": 3, "かえで": 3}, "f": {"なおと": 1, "はると": 3, "かえで": 1}, "pts": {"なおと": 19, "はると": 3, "たける": 4, "ちはや": 4, "かえで": 2}}, {"date": "2026-01-12", "type": "練習試合", "venue": "美賀多台小学校", "opponent": "太山寺", "us": 27, "them": 19, "result": "W", "q": {"なおと": 2, "たいせい": 2, "しゅんた": 2, "はると": 2, "たける": 2, "こうき": 2, "ちはや": 2, "かえで": 2}, "f": {"なおと": 1, "はると": 2, "たける": 1, "ちはや": 1}, "pts": {"なおと": 4, "たいせい": 2, "しゅんた": 6, "はると": 4, "たける": 4, "こうき": 4}}, {"date": "2026-01-12", "type": "練習試合", "venue": "美賀多台小学校", "opponent": "霞ヶ丘", "us": 26, "them": 23, "result": "W", "q": {"なおと": 2, "たいせい": 2, "しゅんた": 2, "はると": 2, "たける": 2, "こうき": 2, "ちはや": 2, "かえで": 2}, "f": {"なおと": 2, "はると": 2, "たける": 1}, "pts": {"なおと": 2, "しゅんた": 4, "たける": 6, "こうき": 2, "ちはや": 2, "かえで": 2}}, {"date": "2026-01-24", "type": "練習試合", "venue": "太山寺小学校", "opponent": "春日台", "us": 27, "them": 26, "result": "W", "q": {"なおと": 3, "しゅんた": 3, "はると": 3, "たける": 3, "ちはや": 3, "かえで": 3, "ゆうと": 2}, "f": {"なおと": 4, "しゅんた": 1, "はると": 1, "かえで": 1}, "pts": {"なおと": 9, "しゅんた": 6, "はると": 2, "たける": 8, "ちはや": 2}}, {"date": "2026-01-24", "type": "練習試合", "venue": "太山寺小学校", "opponent": "太山寺", "us": 34, "them": 32, "result": "W", "q": {"なおと": 3, "しゅんた": 3, "はると": 3, "たける": 3, "ちはや": 3, "かえで": 3, "ゆうと": 2}, "f": {"なおと": 3, "しゅんた": 1, "ちはや": 1, "かえで": 1}, "pts": {"なおと": 14, "しゅんた": 2, "はると": 1, "たける": 7, "ちはや": 2, "かえで": 8}}, {"date": "2026-01-31", "type": "練習試合", "venue": "花谷小学校", "opponent": "須磨WK", "us": 34, "them": 18, "result": "W", "q": {"なおと": 2, "たいせい": 2, "しゅんた": 2, "はると": 3, "たける": 2, "こうき": 2, "ちはや": 3, "かえで": 2.5, "ゆうと": 2}, "f": {"たいせい": 1, "はると": 2, "ちはや": 1}, "pts": {"なおと": 2, "しゅんた": 6, "はると": 4, "たける": 10, "こうき": 4, "ちはや": 4, "かえで": 4}}, {"date": "2026-02-07", "type": "新人戦（棄権）", "venue": "北神戸田園SC", "opponent": "成徳", "us": 26, "them": 40, "result": "L", "q": {"たいせい": 4, "しゅんた": 4, "はると": 4, "たける": 4, "ちはや": 4}, "f": {"たいせい": 2, "しゅんた": 1, "はると": 6, "ちはや": 1}, "pts": {"たいせい": 4, "しゅんた": 10, "はると": 4, "たける": 8}}, {"date": "2026-02-07", "type": "新人戦（棄権）", "venue": "北神戸田園SC", "opponent": "会下山", "us": 28, "them": 22, "result": "W", "q": {"たいせい": 4, "しゅんた": 4, "はると": 4, "たける": 4, "ちはや": 4}, "f": {"しゅんた": 3, "はると": 3, "たける": 2, "ちはや": 1}, "pts": {"たいせい": 2, "しゅんた": 12, "はると": 4, "たける": 8, "ちはや": 2}}, {"date": "2026-02-14", "type": "練習試合", "venue": "枝吉小学校", "opponent": "枝吉", "us": 22, "them": 56, "result": "L", "q": {"なおと": 1.5, "たいせい": 3, "はると": 3, "たける": 3, "こうき": 3, "ちはや": 2.5, "かえで": 2, "ゆうと": 2}, "f": {"ちはや": 1}, "pts": {"たける": 16, "こうき": 4, "ゆうと": 2}}, {"date": "2026-02-14", "type": "練習試合", "venue": "枝吉小学校", "opponent": "川辺ジャッカルズ", "us": 32, "them": 33, "result": "L", "q": {"なおと": 3, "たいせい": 2.5, "はると": 3, "たける": 3, "こうき": 3, "ちはや": 2.5, "かえで": 2, "ゆうと": 1}, "f": {"なおと": 2, "たいせい": 2, "はると": 2, "たける": 1, "こうき": 3, "ちはや": 1}, "pts": {"なおと": 14, "たける": 16, "こうき": 2}}, {"date": "2026-02-21", "type": "練習試合", "venue": "福住小学校", "opponent": "成徳", "us": 27, "them": 68, "result": "L", "q": {"なおと": 3, "しゅんた": 3, "たける": 3, "こうき": 3, "ちはや": 3, "かえで": 2.5, "ゆうと": 2.5}, "f": {"なおと": 1, "しゅんた": 1, "こうき": 3, "ちはや": 1, "かえで": 1, "ゆうと": 1}, "pts": {"なおと": 2, "しゅんた": 4, "たける": 8, "こうき": 8, "かえで": 5}}, {"date": "2026-02-21", "type": "練習試合", "venue": "福住小学校", "opponent": "萩野", "us": 30, "them": 41, "result": "L", "q": {"なおと": 3, "しゅんた": 3, "たける": 3, "こうき": 2, "ちはや": 3, "かえで": 3, "ゆうと": 2}, "f": {"なおと": 4, "しゅんた": 2, "ちはや": 2}, "pts": {"なおと": 10, "しゅんた": 3, "たける": 4, "こうき": 8, "ちはや": 5}}, {"date": "2026-02-21", "type": "練習試合", "venue": "福住小学校", "opponent": "BELUGA", "us": 23, "them": 42, "result": "L", "q": {"なおと": 3, "しゅんた": 3, "たける": 3, "こうき": 3, "ちはや": 3, "かえで": 3, "ゆうと": 2}, "f": {"なおと": 2, "しゅんた": 2, "たける": 1, "ちはや": 2, "かえで": 2, "ゆうと": 1}, "pts": {"なおと": 9, "しゅんた": 4, "たける": 6, "こうき": 4}}, {"date": "2026-02-28", "type": "練習試合（2Q）", "venue": "丸山ひばり小学校", "opponent": "高羽", "us": 30, "them": 16, "result": "W", "q": {"なおと": 1, "たいせい": 1, "しゅんた": 2, "はると": 1.5, "たける": 1, "ちはや": 1, "かえで": 2, "ゆうと": 1}, "f": {"しゅんた": 1, "はると": 1}, "pts": {"なおと": 8, "しゅんた": 10, "はると": 2, "たける": 8, "ちはや": 2}}, {"date": "2026-02-28", "type": "練習試合（2Q）", "venue": "丸山ひばり小学校", "opponent": "丸山", "us": 51, "them": 26, "result": "W", "q": {"なおと": 3, "たいせい": 2, "しゅんた": 3, "はると": 2, "たける": 2, "ちはや": 2, "かえで": 2, "ゆうと": 1}, "f": {"なおと": 4, "たいせい": 1, "しゅんた": 2, "ちはや": 1}, "pts": {"なおと": 10, "たいせい": 8, "しゅんた": 10, "はると": 2, "たける": 10, "かえで": 4}}, {"date": "2026-03-20", "type": "練習試合", "venue": "神鋼加古川体育館", "opponent": "清水", "us": 47, "them": 12, "result": "W", "q": {"なおと": 2, "たいせい": 3, "しゅんた": 3, "はると": 3, "たける": 2, "こうき": 2, "ちはや": 3}, "f": {"なおと": 3, "はると": 3, "たける": 2, "こうき": 1, "ちはや": 4}, "pts": {"なおと": 16, "たいせい": 6, "しゅんた": 4, "たける": 12, "こうき": 4, "ちはや": 5}}, {"date": "2026-03-20", "type": "練習試合（3Q）", "venue": "神鋼加古川体育館", "opponent": "清水", "us": 44, "them": 9, "result": "W", "q": {"なおと": 2, "しゅんた": 2, "はると": 2, "たける": 2.5, "こうき": 3, "ちはや": 2.5}, "f": {"なおと": 1, "たける": 1, "こうき": 1, "ちはや": 1}, "pts": {"なおと": 6, "しゅんた": 4, "はると": 4, "たける": 8, "こうき": 15, "ちはや": 7}}, {"date": "2026-03-29", "type": "練習試合", "venue": "しあわせの村体育館", "opponent": "須磨WK", "us": 35, "them": 23, "result": "W", "q": {"なおと": 3, "たいせい": 2, "しゅんた": 3, "はると": 2, "たける": 3, "こうき": 2, "ちはや": 2, "かえで": 1, "ゆうと": 1}, "f": {"たいせい": 1, "しゅんた": 1, "たける": 3, "かえで": 1, "ゆうと": 1}, "pts": {"なおと": 9, "たいせい": 4, "しゅんた": 12, "はると": 1, "たける": 4, "こうき": 3, "ちはや": 2}}, {"date": "2026-04-05", "type": "練習試合", "venue": "磯上体育館", "opponent": "霞ヶ丘", "us": 36, "them": 28, "result": "W", "q": {"なおと": 3, "しゅんた": 3, "はると": 3, "たける": 3, "こうき": 2, "ちはや": 3, "かえで": 2, "ゆうと": 1}, "f": {"なおと": 3, "しゅんた": 1, "はると": 2, "たける": 1, "こうき": 1, "かえで": 2}, "pts": {"なおと": 13, "しゅんた": 4, "はると": 4, "たける": 13, "こうき": 2}}, {"date": "2026-04-05", "type": "練習試合", "venue": "磯上体育館", "opponent": "稗田", "us": 40, "them": 19, "result": "W", "q": {"なおと": 3, "しゅんた": 3, "はると": 2, "たける": 3, "こうき": 3, "ちはや": 2, "かえで": 3, "ゆうと": 1}, "f": {}, "pts": {"なおと": 15, "しゅんた": 4, "はると": 2, "たける": 8, "こうき": 7, "かえで": 4}}, {"date": "2026-04-05", "type": "練習試合", "venue": "磯上体育館", "opponent": "舞多聞", "us": 38, "them": 40, "result": "L", "q": {"なおと": 3, "しゅんた": 3, "はると": 3, "たける": 3, "こうき": 2, "ちはや": 3, "かえで": 2, "ゆうと": 1}, "f": {"なおと": 2, "はると": 1, "たける": 1}, "pts": {"なおと": 8, "しゅんた": 6, "はると": 2, "たける": 16, "こうき": 4, "かえで": 2}}, {"date": "2026-04-19", "type": "春季大会", "venue": "北神戸田園SC", "opponent": "北", "us": 15, "them": 47, "result": "L", "q": {"なおと": 3, "たいせい": 1, "しゅんた": 3, "はると": 3, "たける": 3, "こうき": 1, "ちはや": 3, "かえで": 2, "ゆうと": 1}, "f": {"なおと": 1, "しゅんた": 5, "はると": 1, "たける": 1, "こうき": 1, "ちはや": 2, "かえで": 1}, "pts": {"なおと": 6, "はると": 1, "たける": 4, "かえで": 4}}, {"date": "2026-04-19", "type": "春季大会", "venue": "北神戸田園SC", "opponent": "会下山", "us": 35, "them": 24, "result": "W", "q": {"なおと": 3, "たいせい": 2, "しゅんた": 3, "はると": 2, "たける": 3, "こうき": 2, "ちはや": 2, "かえで": 2, "ゆうと": 1}, "f": {"なおと": 4, "しゅんた": 4, "はると": 1, "たける": 2, "こうき": 2, "ちはや": 2, "かえで": 1}, "pts": {"なおと": 9, "たいせい": 2, "しゅんた": 7, "はると": 4, "たける": 6, "こうき": 4, "ちはや": 2, "かえで": 1}}, {"date": "2026-05-03", "type": "春季大会", "venue": "北神戸田園SC", "opponent": "垂水高丸", "us": 26, "them": 42, "result": "L", "q": {"なおと": 3, "たいせい": 1, "しゅんた": 3, "はると": 3, "たける": 3, "こうき": 1, "ちはや": 3, "かえで": 2, "ゆうと": 1}, "f": {"たいせい": 1, "しゅんた": 2, "たける": 1, "かえで": 2}, "pts": {"なおと": 8, "しゅんた": 4, "はると": 7, "たける": 7}}, {"date": "2026-05-06", "type": "練習試合", "venue": "美賀多台小学校", "opponent": "春日台", "us": 59, "them": 28, "result": "W", "q": {"なおと": 2, "たいせい": 2, "しゅんた": 2, "はると": 2.5, "たける": 2, "こうき": 2, "ちはや": 2.5, "かえで": 3, "ゆうと": 2}, "f": {"なおと": 1, "たいせい": 4, "しゅんた": 2, "はると": 4, "たける": 1, "こうき": 1, "ちはや": 1, "かえで": 4}, "pts": {"なおと": 10, "たいせい": 3, "しゅんた": 11, "はると": 4, "たける": 16, "こうき": 5, "ちはや": 2, "かえで": 4, "ゆうと": 4}}, {"date": "2026-05-06", "type": "練習試合", "venue": "美賀多台小学校", "opponent": "六甲", "us": 60, "them": 19, "result": "W", "q": {"なおと": 2.5, "たいせい": 2, "しゅんた": 3, "はると": 2, "たける": 2.5, "こうき": 2, "ちはや": 2, "かえで": 2.5, "ゆうと": 1.5}, "f": {"なおと": 3, "たいせい": 3, "はると": 1, "たける": 1, "ちはや": 2, "かえで": 3}, "pts": {"なおと": 14, "たいせい": 4, "しゅんた": 12, "はると": 4, "たける": 18, "ちはや": 2, "かえで": 2, "ゆうと": 4}}, {"date": "2026-05-17", "type": "交流戦（人数不足）", "venue": "西体育館", "opponent": "舞多聞", "us": 47, "them": 26, "result": "W", "q": {"なおと": 3, "しゅんた": 4, "はると": 3, "たける": 4, "ちはや": 3, "かえで": 3}, "f": {}, "pts": {"なおと": 9, "しゅんた": 20, "はると": 4, "たける": 13, "ちはや": 1}}, {"date": "2026-05-17", "type": "交流戦（人数不足）", "venue": "西体育館", "opponent": "舞多聞", "us": 43, "them": 23, "result": "W", "q": {"なおと": 4, "しゅんた": 3, "はると": 3, "たける": 3, "ちはや": 4, "かえで": 3}, "f": {}, "pts": {"なおと": 6, "しゅんた": 12, "はると": 10, "たける": 12, "ちはや": 3}}, {"date": "2026-05-24", "type": "前期リーグ戦", "venue": "南あわじ市三原健康広場", "opponent": "洲本", "us": 34, "them": 13, "result": "W", "q": {"なおと": 2.5, "たいせい": 2, "しゅんた": 3, "はると": 2, "たける": 3, "こうき": 2, "ちはや": 2, "かえで": 2, "ゆうと": 1.5}, "f": {"なおと": 2, "しゅんた": 1, "はると": 1, "たける": 3}, "pts": {"なおと": 10, "しゅんた": 4, "はると": 4, "たける": 14, "ちはや": 2}}, {"date": "2026-05-24", "type": "前期リーグ戦", "venue": "南あわじ市三原健康広場", "opponent": "天神川", "us": 39, "them": 23, "result": "W", "q": {"なおと": 2, "たいせい": 2, "しゅんた": 2, "はると": 2.5, "たける": 2, "こうき": 2, "ちはや": 2.5, "かえで": 3, "ゆうと": 2}, "f": {"なおと": 2, "たいせい": 3, "しゅんた": 1, "はると": 2, "たける": 1, "ちはや": 2, "かえで": 1, "ゆうと": 1}, "pts": {"なおと": 4, "たいせい": 4, "しゅんた": 12, "はると": 3, "たける": 10, "ちはや": 1, "かえで": 3, "ゆうと": 2}}, {"date": "2026-06-06", "type": "あじさいカップ", "venue": "三木山総合公園", "opponent": "三木SC", "us": 64, "them": 18, "result": "W", "q": {"なおと": 2.5, "たいせい": 3, "はると": 3, "たける": 3, "こうき": 3, "ちはや": 3, "ゆうと": 2.5}, "f": {"なおと": 2, "たいせい": 2, "はると": 1, "たける": 1, "こうき": 1, "ちはや": 2}, "pts": {"なおと": 12, "たいせい": 4, "たける": 18, "こうき": 18, "ちはや": 6, "ゆうと": 6}}, {"date": "2026-06-06", "type": "あじさいカップ", "venue": "三木山総合公園", "opponent": "緑", "us": 46, "them": 20, "result": "W", "q": {"なおと": 3, "たいせい": 2.5, "しゅんた": 3, "はると": 2.5, "たける": 3, "こうき": 2.5, "ちはや": 3, "ゆうと": 2}, "f": {"たいせい": 3, "しゅんた": 1, "はると": 3, "たける": 1}, "pts": {"なおと": 4, "たいせい": 2, "しゅんた": 16, "はると": 6, "たける": 4, "こうき": 10, "ゆうと": 4}}, {"date": "2026-06-06", "type": "あじさいカップ", "venue": "三木山総合公園", "opponent": "須磨WK", "us": 46, "them": 21, "result": "W", "q": {"なおと": 3, "たいせい": 2, "しゅんた": 3, "はると": 3, "たける": 3, "こうき": 2, "ちはや": 3, "ゆうと": 1}, "f": {"なおと": 3, "はると": 2, "こうき": 2, "ちはや": 1}, "pts": {"なおと": 8, "たいせい": 2, "しゅんた": 10, "はると": 8, "たける": 14, "こうき": 2, "ゆうと": 2}}, {"date": "2026-06-08", "type": "交流戦（人数不足）", "venue": "福住小学校", "opponent": "BS", "us": 41, "them": 22, "result": "W", "q": {"なおと": 3, "たいせい": 3, "しゅんた": 4, "はると": 4, "たける": 3, "ちはや": 3}, "f": {"なおと": 3, "たいせい": 2, "はると": 1, "ちはや": 1}, "pts": {"なおと": 8, "たいせい": 2, "しゅんた": 17, "はると": 2, "たける": 12}}, {"date": "2026-06-08", "type": "交流戦（人数不足）", "venue": "福住小学校", "opponent": "福住", "us": 64, "them": 51, "result": "W", "q": {"なおと": 4, "たいせい": 2.5, "しゅんた": 3, "はると": 2.5, "たける": 4, "ちはや": 3.5}, "f": {"なおと": 4, "たいせい": 3, "しゅんた": 4, "はると": 1, "たける": 4, "ちはや": 3}, "pts": {"なおと": 13, "たいせい": 2, "しゅんた": 19, "はると": 8, "たける": 18, "ちはや": 4}}, {"date": "2026-06-13", "type": "優勝大会", "venue": "中央体育館", "opponent": "西神戸", "us": 34, "them": 62, "result": "L", "q": {"なおと": 3, "たいせい": 1.5, "しゅんた": 3, "はると": 2.5, "たける": 2.5, "こうき": 1.5, "ちはや": 2.5, "かえで": 2, "ゆうと": 1.5}, "f": {"なおと": 3, "たいせい": 2, "しゅんた": 1, "はると": 1, "たける": 1, "こうき": 1, "ちはや": 2, "かえで": 2}, "pts": {"なおと": 4, "たいせい": 2, "しゅんた": 20, "たける": 4, "かえで": 2, "ゆうと": 2}}, {"date": "2026-06-21", "type": "練習試合", "venue": "西体育館", "opponent": "霞ヶ丘", "us": 38, "them": 28, "result": "W", "q": {"なおと": 3, "たいせい": 2, "しゅんた": 3, "はると": 3, "たける": 3, "ちはや": 3, "かえで": 3}, "f": {"なおと": 4, "たいせい": 4, "たける": 2, "ちはや": 2, "かえで": 1}, "pts": {"なおと": 6, "たいせい": 3, "しゅんた": 12, "はると": 7, "たける": 8, "ちはや": 2}}, {"date": "2026-07-04", "type": "練習試合", "venue": "県立スポーツ交流館", "opponent": "伊川谷", "us": 47, "them": 14, "result": "W", "q": {"なおと": 2.5, "たいせい": 2.5, "しゅんた": 2.5, "はると": 3, "たける": 2.5, "ちはや": 3, "かえで": 2.5, "ゆうと": 1.5}, "f": {"なおと": 3, "たいせい": 2, "しゅんた": 3, "はると": 2, "かえで": 3}, "pts": {"なおと": 9, "たいせい": 10, "しゅんた": 8, "たける": 9, "ちはや": 5, "かえで": 2, "ゆうと": 4}}, {"date": "2026-07-04", "type": "練習試合", "venue": "県立スポーツ交流館", "opponent": "六甲", "us": 45, "them": 15, "result": "W", "q": {"なおと": 3, "たいせい": 1.5, "しゅんた": 3, "はると": 2, "たける": 3, "ちはや": 2.5, "かえで": 3, "ゆうと": 2}, "f": {"なおと": 1, "たいせい": 5, "しゅんた": 2, "はると": 1, "たける": 2, "かえで": 1, "ゆうと": 1}, "pts": {"なおと": 12, "たいせい": 2, "しゅんた": 14, "たける": 16, "ゆうと": 1}}]};
+const SEASON_DATA = {"team": "美賀多台", "asOf": "2026-07-04", "players": ["なおと", "たいせい", "しゅんた", "はると", "たける", "こうき", "ちはや", "かえで", "ゆうと"], "games": [{"date": "2025-12-27", "type": "練習試合", "venue": "稗田小学校", "opponent": "稗田", "us": 34, "them": 16, "result": "W", "q": {"なおと": 3, "たいせい": 3, "はると": 3, "たける": 3, "ちはや": 3, "かえで": 3}, "f": {"なおと": 1, "はると": 3, "かえで": 1}, "pts": {"なおと": 19, "はると": 3, "たける": 4, "ちはや": 4, "かえで": 2}}, {"date": "2026-01-12", "type": "練習試合", "venue": "美賀多台小学校", "opponent": "太山寺", "us": 27, "them": 19, "result": "W", "q": {"なおと": 2, "たいせい": 2, "しゅんた": 2, "はると": 2, "たける": 2, "こうき": 2, "ちはや": 2, "かえで": 2}, "f": {"なおと": 1, "はると": 2, "たける": 1, "ちはや": 1}, "pts": {"なおと": 4, "たいせい": 2, "しゅんた": 6, "はると": 4, "たける": 4, "こうき": 4}}, {"date": "2026-01-12", "type": "練習試合", "venue": "美賀多台小学校", "opponent": "霞ヶ丘", "us": 26, "them": 23, "result": "W", "q": {"なおと": 2, "たいせい": 2, "しゅんた": 2, "はると": 2, "たける": 2, "こうき": 2, "ちはや": 2, "かえで": 2}, "f": {"なおと": 2, "はると": 2, "たける": 1}, "pts": {"なおと": 2, "しゅんた": 4, "たける": 6, "こうき": 2, "ちはや": 2, "かえで": 2}}, {"date": "2026-01-24", "type": "練習試合", "venue": "太山寺小学校", "opponent": "春日台", "us": 27, "them": 26, "result": "W", "q": {"なおと": 3, "しゅんた": 3, "はると": 3, "たける": 3, "ちはや": 3, "かえで": 3, "ゆうと": 2}, "f": {"なおと": 4, "しゅんた": 1, "はると": 1, "かえで": 1}, "pts": {"なおと": 9, "しゅんた": 6, "はると": 2, "たける": 8, "ちはや": 2}}, {"date": "2026-01-24", "type": "練習試合", "venue": "太山寺小学校", "opponent": "太山寺", "us": 34, "them": 32, "result": "W", "q": {"なおと": 3, "しゅんた": 3, "はると": 3, "たける": 3, "ちはや": 3, "かえで": 3, "ゆうと": 2}, "f": {"なおと": 3, "しゅんた": 1, "ちはや": 1, "かえで": 1}, "pts": {"なおと": 14, "しゅんた": 2, "はると": 1, "たける": 7, "ちはや": 2, "かえで": 8}}, {"date": "2026-01-31", "type": "練習試合", "venue": "花谷小学校", "opponent": "須磨WK", "us": 34, "them": 18, "result": "W", "q": {"なおと": 2, "たいせい": 2, "しゅんた": 2, "はると": 3, "たける": 2, "こうき": 2, "ちはや": 3, "かえで": 2.5, "ゆうと": 2}, "f": {"たいせい": 1, "はると": 2, "ちはや": 1}, "pts": {"なおと": 2, "しゅんた": 6, "はると": 4, "たける": 10, "こうき": 4, "ちはや": 4, "かえで": 4}}, {"date": "2026-02-07", "type": "新人戦（棄権）", "venue": "北神戸田園SC", "opponent": "成徳", "us": 26, "them": 40, "result": "L", "q": {"たいせい": 4, "しゅんた": 4, "はると": 4, "たける": 4, "ちはや": 4}, "f": {"たいせい": 2, "しゅんた": 1, "はると": 6, "ちはや": 1}, "pts": {"たいせい": 4, "しゅんた": 10, "はると": 4, "たける": 8}}, {"date": "2026-02-07", "type": "新人戦（棄権）", "venue": "北神戸田園SC", "opponent": "会下山", "us": 28, "them": 22, "result": "W", "q": {"たいせい": 4, "しゅんた": 4, "はると": 4, "たける": 4, "ちはや": 4}, "f": {"しゅんた": 3, "はると": 3, "たける": 2, "ちはや": 1}, "pts": {"たいせい": 2, "しゅんた": 12, "はると": 4, "たける": 8, "ちはや": 2}}, {"date": "2026-02-14", "type": "練習試合", "venue": "枝吉小学校", "opponent": "枝吉", "us": 22, "them": 56, "result": "L", "q": {"なおと": 1.5, "たいせい": 3, "はると": 3, "たける": 3, "こうき": 3, "ちはや": 2.5, "かえで": 2, "ゆうと": 2}, "f": {"ちはや": 1}, "pts": {"たける": 16, "こうき": 4, "ゆうと": 2}}, {"date": "2026-02-14", "type": "練習試合", "venue": "枝吉小学校", "opponent": "川辺", "us": 32, "them": 33, "result": "L", "q": {"なおと": 3, "たいせい": 2.5, "はると": 3, "たける": 3, "こうき": 3, "ちはや": 2.5, "かえで": 2, "ゆうと": 1}, "f": {"なおと": 2, "たいせい": 2, "はると": 2, "たける": 1, "こうき": 3, "ちはや": 1}, "pts": {"なおと": 14, "たける": 16, "こうき": 2}}, {"date": "2026-02-21", "type": "練習試合", "venue": "福住小学校", "opponent": "成徳", "us": 27, "them": 68, "result": "L", "q": {"なおと": 3, "しゅんた": 3, "たける": 3, "こうき": 3, "ちはや": 3, "かえで": 2.5, "ゆうと": 2.5}, "f": {"なおと": 1, "しゅんた": 1, "こうき": 3, "ちはや": 1, "かえで": 1, "ゆうと": 1}, "pts": {"なおと": 2, "しゅんた": 4, "たける": 8, "こうき": 8, "かえで": 5}}, {"date": "2026-02-21", "type": "練習試合", "venue": "福住小学校", "opponent": "萩野", "us": 30, "them": 41, "result": "L", "q": {"なおと": 3, "しゅんた": 3, "たける": 3, "こうき": 2, "ちはや": 3, "かえで": 3, "ゆうと": 2}, "f": {"なおと": 4, "しゅんた": 2, "ちはや": 2}, "pts": {"なおと": 10, "しゅんた": 3, "たける": 4, "こうき": 8, "ちはや": 5}}, {"date": "2026-02-21", "type": "練習試合", "venue": "福住小学校", "opponent": "BELUGA", "us": 23, "them": 42, "result": "L", "q": {"なおと": 3, "しゅんた": 3, "たける": 3, "こうき": 3, "ちはや": 3, "かえで": 3, "ゆうと": 2}, "f": {"なおと": 2, "しゅんた": 2, "たける": 1, "ちはや": 2, "かえで": 2, "ゆうと": 1}, "pts": {"なおと": 9, "しゅんた": 4, "たける": 6, "こうき": 4}}, {"date": "2026-02-28", "type": "練習試合（2Q）", "venue": "丸山ひばり小学校", "opponent": "高羽", "us": 30, "them": 16, "result": "W", "q": {"なおと": 1, "たいせい": 1, "しゅんた": 2, "はると": 1.5, "たける": 1, "ちはや": 1, "かえで": 2, "ゆうと": 1}, "f": {"しゅんた": 1, "はると": 1}, "pts": {"なおと": 8, "しゅんた": 10, "はると": 2, "たける": 8, "ちはや": 2}}, {"date": "2026-02-28", "type": "練習試合（2Q）", "venue": "丸山ひばり小学校", "opponent": "丸山", "us": 51, "them": 26, "result": "W", "q": {"なおと": 3, "たいせい": 2, "しゅんた": 3, "はると": 2, "たける": 2, "ちはや": 2, "かえで": 2, "ゆうと": 1}, "f": {"なおと": 4, "たいせい": 1, "しゅんた": 2, "ちはや": 1}, "pts": {"なおと": 10, "たいせい": 8, "しゅんた": 10, "はると": 2, "たける": 10, "かえで": 4}}, {"date": "2026-03-20", "type": "練習試合", "venue": "神鋼加古川体育館", "opponent": "清水", "us": 47, "them": 12, "result": "W", "q": {"なおと": 2, "たいせい": 3, "しゅんた": 3, "はると": 3, "たける": 2, "こうき": 2, "ちはや": 3}, "f": {"なおと": 3, "はると": 3, "たける": 2, "こうき": 1, "ちはや": 4}, "pts": {"なおと": 16, "たいせい": 6, "しゅんた": 4, "たける": 12, "こうき": 4, "ちはや": 5}}, {"date": "2026-03-20", "type": "練習試合（3Q）", "venue": "神鋼加古川体育館", "opponent": "清水", "us": 44, "them": 9, "result": "W", "q": {"なおと": 2, "しゅんた": 2, "はると": 2, "たける": 2.5, "こうき": 3, "ちはや": 2.5}, "f": {"なおと": 1, "たける": 1, "こうき": 1, "ちはや": 1}, "pts": {"なおと": 6, "しゅんた": 4, "はると": 4, "たける": 8, "こうき": 15, "ちはや": 7}}, {"date": "2026-03-29", "type": "練習試合", "venue": "しあわせの村体育館", "opponent": "須磨WK", "us": 35, "them": 23, "result": "W", "q": {"なおと": 3, "たいせい": 2, "しゅんた": 3, "はると": 2, "たける": 3, "こうき": 2, "ちはや": 2, "かえで": 1, "ゆうと": 1}, "f": {"たいせい": 1, "しゅんた": 1, "たける": 3, "かえで": 1, "ゆうと": 1}, "pts": {"なおと": 9, "たいせい": 4, "しゅんた": 12, "はると": 1, "たける": 4, "こうき": 3, "ちはや": 2}}, {"date": "2026-04-05", "type": "練習試合", "venue": "磯上体育館", "opponent": "霞ヶ丘", "us": 36, "them": 28, "result": "W", "q": {"なおと": 3, "しゅんた": 3, "はると": 3, "たける": 3, "こうき": 2, "ちはや": 3, "かえで": 2, "ゆうと": 1}, "f": {"なおと": 3, "しゅんた": 1, "はると": 2, "たける": 1, "こうき": 1, "かえで": 2}, "pts": {"なおと": 13, "しゅんた": 4, "はると": 4, "たける": 13, "こうき": 2}}, {"date": "2026-04-05", "type": "練習試合", "venue": "磯上体育館", "opponent": "稗田", "us": 40, "them": 19, "result": "W", "q": {"なおと": 3, "しゅんた": 3, "はると": 2, "たける": 3, "こうき": 3, "ちはや": 2, "かえで": 3, "ゆうと": 1}, "f": {}, "pts": {"なおと": 15, "しゅんた": 4, "はると": 2, "たける": 8, "こうき": 7, "かえで": 4}}, {"date": "2026-04-05", "type": "練習試合", "venue": "磯上体育館", "opponent": "舞多聞", "us": 38, "them": 40, "result": "L", "q": {"なおと": 3, "しゅんた": 3, "はると": 3, "たける": 3, "こうき": 2, "ちはや": 3, "かえで": 2, "ゆうと": 1}, "f": {"なおと": 2, "はると": 1, "たける": 1}, "pts": {"なおと": 8, "しゅんた": 6, "はると": 2, "たける": 16, "こうき": 4, "かえで": 2}}, {"date": "2026-04-19", "type": "春季大会", "venue": "北神戸田園SC", "opponent": "北", "us": 15, "them": 47, "result": "L", "q": {"なおと": 3, "たいせい": 1, "しゅんた": 3, "はると": 3, "たける": 3, "こうき": 1, "ちはや": 3, "かえで": 2, "ゆうと": 1}, "f": {"なおと": 1, "しゅんた": 5, "はると": 1, "たける": 1, "こうき": 1, "ちはや": 2, "かえで": 1}, "pts": {"なおと": 6, "はると": 1, "たける": 4, "かえで": 4}}, {"date": "2026-04-19", "type": "春季大会", "venue": "北神戸田園SC", "opponent": "会下山", "us": 35, "them": 24, "result": "W", "q": {"なおと": 3, "たいせい": 2, "しゅんた": 3, "はると": 2, "たける": 3, "こうき": 2, "ちはや": 2, "かえで": 2, "ゆうと": 1}, "f": {"なおと": 4, "しゅんた": 4, "はると": 1, "たける": 2, "こうき": 2, "ちはや": 2, "かえで": 1}, "pts": {"なおと": 9, "たいせい": 2, "しゅんた": 7, "はると": 4, "たける": 6, "こうき": 4, "ちはや": 2, "かえで": 1}}, {"date": "2026-05-03", "type": "春季大会", "venue": "北神戸田園SC", "opponent": "垂水高丸", "us": 26, "them": 42, "result": "L", "q": {"なおと": 3, "たいせい": 1, "しゅんた": 3, "はると": 3, "たける": 3, "こうき": 1, "ちはや": 3, "かえで": 2, "ゆうと": 1}, "f": {"たいせい": 1, "しゅんた": 2, "たける": 1, "かえで": 2}, "pts": {"なおと": 8, "しゅんた": 4, "はると": 7, "たける": 7}}, {"date": "2026-05-06", "type": "練習試合", "venue": "美賀多台小学校", "opponent": "春日台", "us": 59, "them": 28, "result": "W", "q": {"なおと": 2, "たいせい": 2, "しゅんた": 2, "はると": 2.5, "たける": 2, "こうき": 2, "ちはや": 2.5, "かえで": 3, "ゆうと": 2}, "f": {"なおと": 1, "たいせい": 4, "しゅんた": 2, "はると": 4, "たける": 1, "こうき": 1, "ちはや": 1, "かえで": 4}, "pts": {"なおと": 10, "たいせい": 3, "しゅんた": 11, "はると": 4, "たける": 16, "こうき": 5, "ちはや": 2, "かえで": 4, "ゆうと": 4}}, {"date": "2026-05-06", "type": "練習試合", "venue": "美賀多台小学校", "opponent": "六甲", "us": 60, "them": 19, "result": "W", "q": {"なおと": 2.5, "たいせい": 2, "しゅんた": 3, "はると": 2, "たける": 2.5, "こうき": 2, "ちはや": 2, "かえで": 2.5, "ゆうと": 1.5}, "f": {"なおと": 3, "たいせい": 3, "はると": 1, "たける": 1, "ちはや": 2, "かえで": 3}, "pts": {"なおと": 14, "たいせい": 4, "しゅんた": 12, "はると": 4, "たける": 18, "ちはや": 2, "かえで": 2, "ゆうと": 4}}, {"date": "2026-05-17", "type": "交流戦（人数不足）", "venue": "西体育館", "opponent": "舞多聞", "us": 47, "them": 26, "result": "W", "q": {"なおと": 3, "しゅんた": 4, "はると": 3, "たける": 4, "ちはや": 3, "かえで": 3}, "f": {}, "pts": {"なおと": 9, "しゅんた": 20, "はると": 4, "たける": 13, "ちはや": 1}}, {"date": "2026-05-17", "type": "交流戦（人数不足）", "venue": "西体育館", "opponent": "舞多聞", "us": 43, "them": 23, "result": "W", "q": {"なおと": 4, "しゅんた": 3, "はると": 3, "たける": 3, "ちはや": 4, "かえで": 3}, "f": {}, "pts": {"なおと": 6, "しゅんた": 12, "はると": 10, "たける": 12, "ちはや": 3}}, {"date": "2026-05-24", "type": "前期リーグ戦", "venue": "南あわじ市三原健康広場", "opponent": "洲本", "us": 34, "them": 13, "result": "W", "q": {"なおと": 2.5, "たいせい": 2, "しゅんた": 3, "はると": 2, "たける": 3, "こうき": 2, "ちはや": 2, "かえで": 2, "ゆうと": 1.5}, "f": {"なおと": 2, "しゅんた": 1, "はると": 1, "たける": 3}, "pts": {"なおと": 10, "しゅんた": 4, "はると": 4, "たける": 14, "ちはや": 2}}, {"date": "2026-05-24", "type": "前期リーグ戦", "venue": "南あわじ市三原健康広場", "opponent": "天神川", "us": 39, "them": 23, "result": "W", "q": {"なおと": 2, "たいせい": 2, "しゅんた": 2, "はると": 2.5, "たける": 2, "こうき": 2, "ちはや": 2.5, "かえで": 3, "ゆうと": 2}, "f": {"なおと": 2, "たいせい": 3, "しゅんた": 1, "はると": 2, "たける": 1, "ちはや": 2, "かえで": 1, "ゆうと": 1}, "pts": {"なおと": 4, "たいせい": 4, "しゅんた": 12, "はると": 3, "たける": 10, "ちはや": 1, "かえで": 3, "ゆうと": 2}}, {"date": "2026-06-06", "type": "あじさいカップ", "venue": "三木山総合公園", "opponent": "三木SC", "us": 64, "them": 18, "result": "W", "q": {"なおと": 2.5, "たいせい": 3, "はると": 3, "たける": 3, "こうき": 3, "ちはや": 3, "ゆうと": 2.5}, "f": {"なおと": 2, "たいせい": 2, "はると": 1, "たける": 1, "こうき": 1, "ちはや": 2}, "pts": {"なおと": 12, "たいせい": 4, "たける": 18, "こうき": 18, "ちはや": 6, "ゆうと": 6}}, {"date": "2026-06-06", "type": "あじさいカップ", "venue": "三木山総合公園", "opponent": "緑", "us": 46, "them": 20, "result": "W", "q": {"なおと": 3, "たいせい": 2.5, "しゅんた": 3, "はると": 2.5, "たける": 3, "こうき": 2.5, "ちはや": 3, "ゆうと": 2}, "f": {"たいせい": 3, "しゅんた": 1, "はると": 3, "たける": 1}, "pts": {"なおと": 4, "たいせい": 2, "しゅんた": 16, "はると": 6, "たける": 4, "こうき": 10, "ゆうと": 4}}, {"date": "2026-06-06", "type": "あじさいカップ", "venue": "三木山総合公園", "opponent": "須磨WK", "us": 46, "them": 21, "result": "W", "q": {"なおと": 3, "たいせい": 2, "しゅんた": 3, "はると": 3, "たける": 3, "こうき": 2, "ちはや": 3, "ゆうと": 1}, "f": {"なおと": 3, "はると": 2, "こうき": 2, "ちはや": 1}, "pts": {"なおと": 8, "たいせい": 2, "しゅんた": 10, "はると": 8, "たける": 14, "こうき": 2, "ゆうと": 2}}, {"date": "2026-06-08", "type": "交流戦（人数不足）", "venue": "福住小学校", "opponent": "BS", "us": 41, "them": 22, "result": "W", "q": {"なおと": 3, "たいせい": 3, "しゅんた": 4, "はると": 4, "たける": 3, "ちはや": 3}, "f": {"なおと": 3, "たいせい": 2, "はると": 1, "ちはや": 1}, "pts": {"なおと": 8, "たいせい": 2, "しゅんた": 17, "はると": 2, "たける": 12}}, {"date": "2026-06-08", "type": "交流戦（人数不足）", "venue": "福住小学校", "opponent": "福住", "us": 64, "them": 51, "result": "W", "q": {"なおと": 4, "たいせい": 2.5, "しゅんた": 3, "はると": 2.5, "たける": 4, "ちはや": 3.5}, "f": {"なおと": 4, "たいせい": 3, "しゅんた": 4, "はると": 1, "たける": 4, "ちはや": 3}, "pts": {"なおと": 13, "たいせい": 2, "しゅんた": 19, "はると": 8, "たける": 18, "ちはや": 4}}, {"date": "2026-06-13", "type": "優勝大会", "venue": "中央体育館", "opponent": "西神戸", "us": 34, "them": 62, "result": "L", "q": {"なおと": 3, "たいせい": 1.5, "しゅんた": 3, "はると": 2.5, "たける": 2.5, "こうき": 1.5, "ちはや": 2.5, "かえで": 2, "ゆうと": 1.5}, "f": {"なおと": 3, "たいせい": 2, "しゅんた": 1, "はると": 1, "たける": 1, "こうき": 1, "ちはや": 2, "かえで": 2}, "pts": {"なおと": 4, "たいせい": 2, "しゅんた": 20, "たける": 4, "かえで": 2, "ゆうと": 2}}, {"date": "2026-06-21", "type": "練習試合", "venue": "西体育館", "opponent": "霞ヶ丘", "us": 38, "them": 28, "result": "W", "q": {"なおと": 3, "たいせい": 2, "しゅんた": 3, "はると": 3, "たける": 3, "ちはや": 3, "かえで": 3}, "f": {"なおと": 4, "たいせい": 4, "たける": 2, "ちはや": 2, "かえで": 1}, "pts": {"なおと": 6, "たいせい": 3, "しゅんた": 12, "はると": 7, "たける": 8, "ちはや": 2}}, {"date": "2026-07-04", "type": "練習試合", "venue": "県立スポーツ交流館", "opponent": "伊川谷", "us": 47, "them": 14, "result": "W", "q": {"なおと": 2.5, "たいせい": 2.5, "しゅんた": 2.5, "はると": 3, "たける": 2.5, "ちはや": 3, "かえで": 2.5, "ゆうと": 1.5}, "f": {"なおと": 3, "たいせい": 2, "しゅんた": 3, "はると": 2, "かえで": 3}, "pts": {"なおと": 9, "たいせい": 10, "しゅんた": 8, "たける": 9, "ちはや": 5, "かえで": 2, "ゆうと": 4}}, {"date": "2026-07-04", "type": "練習試合", "venue": "県立スポーツ交流館", "opponent": "六甲", "us": 45, "them": 15, "result": "W", "q": {"なおと": 3, "たいせい": 1.5, "しゅんた": 3, "はると": 2, "たける": 3, "ちはや": 2.5, "かえで": 3, "ゆうと": 2}, "f": {"なおと": 1, "たいせい": 5, "しゅんた": 2, "はると": 1, "たける": 2, "かえで": 1, "ゆうと": 1}, "pts": {"なおと": 12, "たいせい": 2, "しゅんた": 14, "たける": 16, "ゆうと": 1}}]};
 </script>
 <script>
 let D = SEASON_DATA;
@@ -545,49 +538,25 @@ function renderMarginChart(){
   box.innerHTML = `<svg class="chart-svg" viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="得失点差グラフ">
     <line x1="${padX}" y1="${mid}" x2="${W-padX}" y2="${mid}" stroke="var(--border)" stroke-width="1"/>${bars}</svg>`;
   box.querySelectorAll('.mbar').forEach(el=>{
-    el.addEventListener('click', ()=>{ switchTab('games'); showGameDetail(Number(el.dataset.i)); });
+    el.addEventListener('click', ()=>{ switchTab('games'); showGameDetail(Number(el.dataset.i), true); });
   });
 }
 
-function renderOpponents(){
-  const map = {};
-  D.games.forEach((g,i)=>{
-    (map[g.opponent] ??= {w:0,l:0,pf:0,pa:0,games:[]});
-    const m = map[g.opponent];
-    g.result==='W' ? m.w++ : m.l++;
-    m.pf += g.us; m.pa += g.them; m.games.push(i);
+function renderTopGamesTable(){
+  const list = D.games.map((g,i)=>({g,i, date:g.date, opp:g.opponent, us:g.us, res:g.result==='W'?1:0}));
+  const rows = applySort(list, '#topGamesTable', {
+    date: r=>r.date, opp: r=>r.opp, us: r=>r.us, res: r=>r.res
+  }, 'date', 'desc');
+  $('#topGamesTable tbody').innerHTML = rows.map(({g,i})=>
+    `<tr class="clickable" data-i="${i}">
+      <td>${jd(g.date)}</td>
+      <td><span class="opp-name">${esc(g.opponent)}</span></td>
+      <td class="num">${g.us} - ${g.them}</td>
+      <td><span class="tag ${g.result==='W'?'w':'l'}">${g.result==='W'?'勝ち':'負け'}</span></td></tr>`).join('');
+  $('#topGamesTable tbody').querySelectorAll('tr').forEach(tr=>{
+    tr.addEventListener('click', ()=>{ switchTab('games'); showGameDetail(Number(tr.dataset.i), true); });
   });
-  const list = Object.entries(map).map(([opp,m])=>{
-    const n = m.w+m.l;
-    return {opp, ...m, n, diff:(m.pf-m.pa)/n};
-  });
-  const rows = applySort(list, '#oppTable', {
-    opp: r=>r.opp, w: r=>r.w + r.n/1000, pf: r=>r.pf, pa: r=>r.pa, diff: r=>r.diff
-  }, 'w', 'desc');
-  $('#oppTable tbody').innerHTML = rows.map(r=>
-    `<tr class="clickable" data-opp="${esc(r.opp)}">
-      <td style="font-weight:900">${esc(r.opp)}</td>
-      <td><span class="num" style="color:var(--win)">${r.w}</span><span class="muted">勝</span> <span class="num" style="color:var(--loss)">${r.l}</span><span class="muted">敗</span></td>
-      <td class="num">${r.pf}</td><td class="num">${r.pa}</td>
-      <td class="num" style="color:${r.diff>=0?'var(--win)':'var(--loss)'}">${r.diff>=0?'+':''}${r.diff.toFixed(1)}</td></tr>`).join('');
-  $('#oppTable tbody').querySelectorAll('tr').forEach(tr=>{
-    tr.addEventListener('click', ()=>showOppDetail(tr.dataset.opp, map[tr.dataset.opp]));
-  });
-  bindSort('#oppTable', renderOpponents);
-}
-
-function showOppDetail(opp, m){
-  $('#oppDetailCard').classList.remove('hidden');
-  $('#oppDetailTitle').textContent = `vs ${opp}（${m.w}勝${m.l}敗）`;
-  $('#oppDetailTable tbody').innerHTML = m.games.map(i=>{
-    const g = D.games[i];
-    return `<tr class="clickable" data-i="${i}"><td>${esc(g.date)}</td><td>${esc(g.type)}</td><td>${esc(g.venue)}</td>
-      <td class="num">${g.us} - ${g.them}</td><td><span class="tag ${g.result==='W'?'w':'l'}">${g.result==='W'?'勝ち':'負け'}</span></td></tr>`;
-  }).join('');
-  $('#oppDetailTable tbody').querySelectorAll('tr').forEach(tr=>{
-    tr.addEventListener('click', ()=>{ switchTab('games'); showGameDetail(Number(tr.dataset.i)); });
-  });
-  $('#oppDetailCard').scrollIntoView({behavior:'smooth', block:'nearest'});
+  bindSort('#topGamesTable', renderTopGamesTable);
 }
 
 function renderTypes(){
@@ -798,31 +767,39 @@ function renderGamesTable(){
   const list = D.games.map((g,i)=>({g,i, date:g.date, type:g.type, venue:g.venue, opp:g.opponent, us:g.us, res:g.result==='W'?1:0}))
     .filter(({g}) => gameFilter==='all' || g.type.replace(/（.*?）/,'')===gameFilter);
   const rows = applySort(list, '#gamesTable', {
-    date: r=>r.date, type: r=>r.type, venue: r=>r.venue, opp: r=>r.opp, us: r=>r.us, res: r=>r.res
+    date: r=>r.date, opp: r=>r.opp, us: r=>r.us, res: r=>r.res, type: r=>r.type, venue: r=>r.venue
   }, 'date', 'asc');
   $('#gamesTable tbody').innerHTML = rows.map(({g,i})=>
     `<tr class="clickable" data-i="${i}">
-      <td class="muted">${i+1}</td><td>${esc(g.date)}</td><td>${esc(g.type)}</td><td>${esc(g.venue)}</td>
-      <td style="font-weight:900">${esc(g.opponent)}</td>
+      <td>${jd(g.date)}</td>
+      <td><span class="opp-name">${esc(g.opponent)}</span></td>
       <td class="num">${g.us} - ${g.them}</td>
-      <td><span class="tag ${g.result==='W'?'w':'l'}">${g.result==='W'?'勝ち':'負け'}</span></td></tr>`).join('');
+      <td><span class="tag ${g.result==='W'?'w':'l'}">${g.result==='W'?'勝ち':'負け'}</span></td>
+      <td class="muted">${esc(g.type)}</td><td class="muted">${esc(g.venue)}</td></tr>`).join('');
   $('#gamesTable tbody').querySelectorAll('tr').forEach(tr=>{
-    tr.addEventListener('click', ()=>showGameDetail(Number(tr.dataset.i)));
+    tr.addEventListener('click', ()=>{ $('#gameSel').value = tr.dataset.i; showGameDetail(Number(tr.dataset.i), true); });
   });
   bindSort('#gamesTable', renderGamesTable);
 }
 
-function showGameDetail(i){
+function renderGameSelector(){
+  $('#gameSel').innerHTML = D.games.map((g,i)=>
+    `<option value="${i}">${jd(g.date)} ${g.result==='W'?'〇':'×'}${esc(g.opponent)}（${g.us}-${g.them}）</option>`).join('');
+  $('#gameSel').onchange = e => showGameDetail(Number(e.target.value));
+  if(D.games.length){ $('#gameSel').value = D.games.length-1; showGameDetail(D.games.length-1); }
+  else $('#gameDetailBody').innerHTML = '<p class="muted">試合データがありません。</p>';
+}
+
+function showGameDetail(i, scroll){
   const g = D.games[i];
-  $('#gameDetailCard').classList.remove('hidden');
-  $('#gameDetailTitle').textContent = `${g.date}　vs ${g.opponent}`;
+  $('#gameSel').value = i;
   const members = D.players.filter(p => p in g.q || p in g.pts || p in g.f);
   const top = members.reduce((b,p)=> (g.pts[p]||0) > (g.pts[b]||0) ? p : b, members[0]);
   $('#gameDetailBody').innerHTML = `
     <div class="gd-head">
       <span class="gd-score">${g.us}<span class="vs">-</span>${g.them}</span>
       <span class="tag ${g.result==='W'?'w':'l'}" style="font-size:13px">${g.result==='W'?'勝ち':'負け'}</span>
-      <span class="muted" style="font-size:12px">${esc(g.type)}｜${esc(g.venue)}</span>
+      <span class="muted" style="font-size:12px">vs ${esc(g.opponent)}｜${esc(g.type)}｜${esc(g.venue)}</span>
     </div>
     <div class="tbl-scroll"><table>
       <thead><tr><th>選手</th><th>得点</th><th>出場Q</th><th>ファウル</th><th></th></tr></thead>
@@ -832,7 +809,7 @@ function showGameDetail(i){
         <td class="num">${fmtN(g.q[p]||0)}</td><td class="num">${g.f[p]||0}</td>
         <td><div class="rank-bar"><i style="width:${g.us?((g.pts[p]||0)/g.us*100).toFixed(0):0}%"></i></div></td></tr>`).join('')}
       </tbody></table></div>`;
-  $('#gameDetailCard').scrollIntoView({behavior:'smooth', block:'nearest'});
+  if(scroll) $('#gameDetailBody').scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 
 /* ---------- tabs ---------- */
@@ -910,10 +887,9 @@ function parseSheet(rows){
 
 /* ---------- boot ---------- */
 function renderAll(){
-  renderScoreboard(); renderMarginChart(); renderOpponents(); renderTypes();
+  renderScoreboard(); renderMarginChart(); renderTopGamesTable(); renderTypes();
   renderPlayerTab(); renderRankings(); renderGameFilters(); renderGamesTable();
-  $('#oppDetailCard').classList.add('hidden');
-  $('#gameDetailCard').classList.add('hidden');
+  renderGameSelector();
 }
 renderAll();
 
