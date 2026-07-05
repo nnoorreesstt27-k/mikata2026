@@ -257,7 +257,6 @@ footer{margin-top:34px;text-align:center;font-size:11px;color:var(--dim);letter-
   td{padding:9px 6px;white-space:nowrap}
   .footnote{font-size:9px;line-height:1.8;margin:0 4px 12px}
   .num{font-size:17px}
-  #playerGamesTable{min-width:520px}
   .tbl-scroll{margin:0 -12px;padding:0 12px}
 
   /* first-screen tables fit the screen width (no pinch/scroll needed) */
@@ -269,11 +268,21 @@ footer{margin-top:34px;text-align:center;font-size:11px;color:var(--dim);letter-
   #typeTable .muted,#topGamesTable .muted{font-size:10px}
   #topGamesTable .opp-name{max-width:60px}
 
-  /* games table: 日付～結果 fit one screen without scrolling; 種別・会場 need a swipe */
-  #gamesTable{min-width:0}
-  #gamesTable th,#gamesTable td{padding:8px 5px;font-size:11px}
-  #gamesTable .opp-name{max-width:66px}
-  #gamesTable .num{font-size:15px}
+  /* games table (試合結果一覧): all 6 columns fit the screen width, no horizontal scroll */
+  #gamesTable{min-width:0;width:100%;table-layout:auto}
+  #gamesTable th,#gamesTable td{padding:7px 2px;font-size:9.5px;white-space:normal;word-break:break-word}
+  #gamesTable .opp-name{max-width:44px;white-space:normal;word-break:break-word}
+  #gamesTable .num{font-size:12.5px}
+  #gamesTable .tag{padding:2px 5px;font-size:9.5px}
+
+  /* player games table (個人成績 出場試合の成績一覧): all 7 columns fit the screen width */
+  #playerGamesTable{min-width:0;width:100%;table-layout:auto}
+  #playerGamesTable th,#playerGamesTable td{padding:7px 2px;font-size:9.5px;white-space:normal;word-break:break-word}
+  #playerGamesTable .opp-name{max-width:40px;white-space:normal;word-break:break-word}
+  #playerGamesTable .num{font-size:12.5px}
+  #playerGamesTable .tag{padding:2px 5px;font-size:9.5px}
+  #playerGamesTable .share-bar{min-width:32px}
+  #playerGamesTable .muted{font-size:9px}
 
   /* margin chart auto-fits to screen width (thin bars, all games visible) */
 
@@ -654,11 +663,11 @@ function renderPlayerGamesTable(s){
     const ptsCell = r.pts>=10 ? `<span style="color:var(--orange2)">${r.pts}</span>` : r.pts;
     const qCell = r.q===4 ? `<span style="color:var(--orange2)">${fmtN(r.q)}</span>` : fmtN(r.q);
     const fCell = r.f>=5 ? `<span style="color:var(--orange2)">${r.f}</span>` : r.f;
-    return `<tr><td>${esc(r.g.date)}</td><td>${esc(r.g.opponent)}</td>
+    return `<tr><td>${jd(r.g.date)}</td><td><span class="opp-name">${esc(r.g.opponent)}</span></td>
       <td><span class="tag ${r.g.result==='W'?'w':'l'}">${r.g.result==='W'?'勝':'負'}</span></td>
       <td class="num">${ptsCell}</td>
       <td class="num">${qCell}</td><td class="num">${fCell}</td>
-      <td><div class="rank-bar" style="min-width:80px"><i style="width:${share}%"></i></div><span class="muted" style="font-size:11px">${share}%</span></td></tr>`;
+      <td><div class="rank-bar share-bar"><i style="width:${share}%"></i></div><span class="muted" style="font-size:11px">${share}%</span></td></tr>`;
   }).join('');
   bindSort('#playerGamesTable', ()=>renderPlayerGamesTable(s));
 }
