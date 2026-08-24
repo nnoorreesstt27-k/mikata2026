@@ -126,8 +126,9 @@ header.topbar{
 .city-card{padding:16px 14px 14px;}
 .city-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;padding:0 4px;}
 .city-stage-name{font-size:14px;font-weight:700;color:var(--accent-gold);}
+.city-weather{font-size:10px;color:var(--text-dim);margin-top:1px;}
 .city-pop{font-size:11px;color:var(--text-dim);}
-svg.city-svg{width:100%;height:150px;display:block;border-radius:12px;overflow:hidden;background:linear-gradient(180deg, #0d1230 0%, #1a1f45 70%, #232a52 100%);}
+svg.city-svg{width:100%;height:150px;display:block;border-radius:12px;overflow:hidden;transition:background 0.4s;}
 .city-foot{font-size:10px;color:var(--text-dim2);text-align:center;margin-top:8px;}
 
 .main-actions{display:flex;gap:10px;margin-top:4px;}
@@ -258,14 +259,14 @@ svg.city-svg{width:100%;height:150px;display:block;border-radius:12px;overflow:h
 .footer-tip{font-size:10px;color:var(--text-dim2);text-align:center;margin:18px 0 0;line-height:1.6;}
 
 .subscreen{position:fixed;inset:0;z-index:60;background:var(--bg-void);overflow-y:auto;-webkit-overflow-scrolling:touch;}
-.subscreen-inner{max-width:480px;margin:0 auto;padding:0 16px 40px;}
+.subscreen-inner{max-width:480px;margin:0 auto;padding:0 16px 40px;padding-top:env(safe-area-inset-top);}
 .subheader{
   position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;
-  padding:14px 0 10px;background:linear-gradient(180deg, var(--bg-void) 75%, transparent);
+  padding:26px 0 10px;background:linear-gradient(180deg, var(--bg-void) 75%, transparent);
 }
 .back-btn{
-  width:34px;height:34px;border-radius:50%;background:var(--bg-panel-2);border:1px solid var(--line);
-  display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text-main);cursor:pointer;flex-shrink:0;
+  width:40px;height:40px;border-radius:50%;background:var(--bg-panel-2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-size:17px;color:var(--text-main);cursor:pointer;flex-shrink:0;
 }
 .subheader h2{font-size:17px;}
 
@@ -345,7 +346,10 @@ svg.city-svg{width:100%;height:150px;display:block;border-radius:12px;overflow:h
 
   <div class="card city-card">
     <div class="city-head">
-      <div class="city-stage-name" id="cityStageName">ド田舎</div>
+      <div>
+        <div class="city-stage-name" id="cityStageName">ド田舎</div>
+        <div class="city-weather mono" id="cityWeather">-</div>
+      </div>
       <div class="city-pop mono" id="cityPop">人口 0人</div>
     </div>
     <svg class="city-svg" viewBox="0 0 340 150" id="citySvg"></svg>
@@ -531,66 +535,40 @@ const SUBJECTS = [
 const MIN_PER_LEVEL = 300;
 
 const QUOTES = [
-  {text:'始める前の一歩が、一番エネルギーを使う。あとは慣れ。', author:'3年前の先輩'},
-  {text:'今日サボっても誰も怒らない。でも未来の自分はちょっと困る。', author:'未来のあなた'},
-  {text:'机に向かった時点で、もう半分勝ってる。', author:'塾の先生'},
-  {text:'わからない問題は、伸びしろの証拠。', author:'家庭教師'},
-  {text:'毎日ちょっとずつ。それが一番強い。', author:'卒業生'},
-  {text:'休むのも作戦のうち。ただし今日は5分だけやろう。', author:'保健室の先生'},
-  {text:'本番はいつも、練習の延長線上にある。', author:'部活の顧問'},
-  {text:'できない日があってもいい。ゼロにしなければOK。', author:'先輩ママ'},
-  {text:'覚えたことは裏切らない。', author:'塾長'},
-  {text:'焦らなくていい、比べるのは去年の自分だけ。', author:'担任の先生'},
-  {text:'1問解けたら、それは今日のヒーロー。', author:'クラスメイト'},
-  {text:'眠い時は寝よう。頭は寝てる間に整理される。', author:'保健の先生'},
-  {text:'苦手科目こそ、伸びしろの宝庫。', author:'家庭教師'},
-  {text:'合格した後の自分に、今日の頑張りを見せてあげよう。', author:'OB'},
-  {text:'コツコツは、いつか爆発力に変わる。', author:'塾の先輩'},
-  {text:'今日の10分は、来月の自分を助けてくれる。', author:'元受験生'},
-  {text:'間違えた問題ほど、覚えている。', author:'先生'},
-  {text:'誰かと比べるより、昨日の自分に勝とう。', author:'コーチ'},
-  {text:'頑張った日はぐっすり眠れる。それでいい。', author:'保護者より'},
-  {text:'一歩ずつでいい、止まらなければ。', author:'マラソン部の先輩'},
-  {text:'テストは実力を測る道具。伸びしろを教えてくれる味方。', author:'塾講師'},
-  {text:'「まあいいか」を1回減らすだけで変わる。', author:'先輩'},
-  {text:'今日やった分だけ、本番の自分が強くなる。', author:'未来のあなた'},
-  {text:'机に向かう5分間が、いちばん尊い。', author:'卒業生より'},
-  {text:'小さな積み重ねが、大きな自信になる。', author:'顧問の先生'},
-  {text:'できたことを数えよう、できなかったことより。', author:'カウンセラー'},
-  {text:'今日の努力は、来年の自分への手紙。', author:'OGより'},
-  {text:'焦りは味方にもなる。上手に使おう。', author:'塾長'},
-  {text:'1日サボっても、それは終わりじゃない、ただの休憩。', author:'保健室より'},
-  {text:'積み上げた時間は、絶対に裏切らない。', author:'先輩たちより'},
-  {text:'今日も一歩。それでじゅうぶん。', author:'Study 思い出帳より'},
-  {text:'小さなことの積み重ねが、とんでもない場所への一番の近道。', author:'イチロー（プロ野球選手）'},
-  {text:'無駄になる努力はない。', author:'川上哲治（プロ野球選手）'},
-  {text:'天才とは、1%のひらめきと99%の努力である。', author:'エジソン（発明家）'},
-  {text:'できると思えばできる、できないと思えばできない。', author:'ヘンリー・フォード（実業家）'},
-  {text:'失敗は成功のもと。', author:'ことわざ'},
-  {text:'小さなことを積み重ねて、大きなことを成す。', author:'二宮尊徳（江戸時代の思想家）'},
-  {text:'三振を恐れていたら、ヒットは打てない。', author:'ベーブ・ルース（野球選手）'},
-  {text:'継続は力なり。', author:'ことわざ'},
-  {text:'千里の道も一歩から。', author:'ことわざ'},
-  {text:'為せば成る、為さねば成らぬ何事も。', author:'上杉鷹山（江戸時代の藩主）'},
-  {text:'雨だれ石を穿つ。', author:'ことわざ'},
-  {text:'練習は嘘をつかない。', author:'スポーツ界の格言'},
-  {text:'今日できることを明日に延ばすな。', author:'ベンジャミン・フランクリン（政治家）'},
-  {text:'走った距離は、裏切らない。', author:'野口みずき（マラソン選手）'},
-  {text:'努力に勝る天才なし。', author:'よく伝わる格言'},
-  {text:'一歩一歩が、遠くまで運んでくれる。', author:'よく伝わる格言'},
-  {text:'明けない夜はない。', author:'ことわざ'},
-  {text:'石の上にも三年。', author:'ことわざ'},
-  {text:'習うより慣れよ。', author:'ことわざ'},
-  {text:'思い立ったが吉日。', author:'ことわざ'},
-  {text:'初心忘るべからず。', author:'世阿弥（能楽師）'},
-  {text:'七転び八起き。', author:'ことわざ'},
-  {text:'継続する人だけが、たどり着ける場所がある。', author:'よく伝わる格言'},
-  {text:'今日の努力は、明日の自分への贈り物。', author:'よく伝わる格言'},
-  {text:'できないと思ったところからが、本当のスタート。', author:'よく伝わる格言'},
-  {text:'努力する人は希望を語り、怠ける人は不満を語る。', author:'よく伝わる格言'},
-  {text:'昨日より今日、今日より明日。', author:'よく伝わる格言'},
-  {text:'やればできる、やらなければ何も始まらない。', author:'よく伝わる格言'},
-  {text:'練習で限界を超えた自分を知っておかないと、本番では勝てない。', author:'古賀稔彦（柔道家）'}
+  {text:'努力する人は希望を語り、怠ける人は不満を語る'},
+  {text:'小さなことを重ねることがとんでもないところに行く ただひとつの道'},
+  {text:'一番いけないのは自分なんかダメだと思い込むことだよ'},
+  {text:'努力をしても報われない奴はいる。間違いなくいる。ただ成功した奴は、必ず努力をしている'},
+  {text:'私の最大の光栄は一度も失敗しないことではなく、倒れるごとに起きあがることにある'},
+  {text:'「どうせ無理」は、ラクしたいから'},
+  {text:'ハートのすべてを注ぎ込めば、勝利するかどうかは問題ではない'},
+  {text:'一度でもあきらめてしまうと、それが癖になる。絶対にあきらめるな'},
+  {text:'努力すれば報われる？そうじゃないだろ。報われるまで努力するんだ'},
+  {text:'才能は有限、努力は無限'},
+  {text:'一番苦しいときが一番成長するとき。 乗り越えた先には新しい自分が待っている'},
+  {text:'努力は必ず報われる。もし報われない努力があるのならば、それはまだ努力と呼べない'},
+  {text:'自分自身で目標に向けて努力するのは楽しい。でも他人から強いられる努力は辛い'},
+  {text:'（天才とは）運と才能と、あと努力…。ごく普通のことを人一倍やった人だよ。そして運は必要だよ'},
+  {text:'成功というものは、その結果ではかるものではなく、それに費やした努力・時間の統計ではかるものである'},
+  {text:'誰もが才能を持っている。でも能力を得るには努力が必要だ。'},
+  {text:'努力ってのは宝くじみたいなものだよ。買っても当たるかどうかはわからないけど、買わなきゃ当たらない'},
+  {text:'今ここにない未来は、自分で創る'},
+  {text:'ずっと恵まれて見える人は、みな必ず努力している。例外なくね。'},
+  {text:'ふだんを変える。それがいちばん人生を変える。'},
+  {text:'習慣になった努力を、実力と呼ぶ。'},
+  {text:'やらない理由を探すのがうまくなると、成長は止まる'},
+  {text:'やるか、やらされるか。'},
+  {text:'反省はしても、後悔はするな！'},
+  {text:'「できる、できない」を決めるのは自分だ'},
+  {text:'結果は誰にもわからなかった…だからまぁせいぜい、悔いが残らない方を自分で選べ'},
+  {text:'もしも相手が絶対かなわない様な強敵だとしても、勝とうとしなきゃ勝てないよ'},
+  {text:'下を向くんじゃねえええええ！'},
+  {text:'負けたくないことに理由って要る？'},
+  {text:'才能は開花させるもの ーセンスは磨くもの！'},
+  {text:'どんな壁も、この脚で飛び越えてみせる！'},
+  {text:'心を燃やせ！'},
+  {text:'今までの自分にとらわれるな。変わるってのは自分を壊すことからしか始まらない'},
+  {text:'負けるのは、悔しいのはもう嫌だから。勝たなきゃ面白くない'}
 ];
 
 const CITY_STAGES = [
@@ -623,6 +601,43 @@ const BUILDINGS = [
   {x:322,w:16, unlock:42, maxH:120, color:'#FF6B9D'},
   {x:150,w:20, unlock:46, maxH:138, color:'#8B7FFF'}
 ];
+
+const SKY_THEMES = {
+  morning:{
+    sunny:  {bg:'linear-gradient(180deg,#ffd9a0 0%,#ffb08a 35%,#2a3550 100%)', label:'朝・晴れ ☀️', deco:'sun', sunColor:'#FFD166'},
+    cloudy: {bg:'linear-gradient(180deg,#c9ccd6 0%,#a9adc0 35%,#2a3550 100%)', label:'朝・くもり ☁️', deco:'cloud', cloudColor:'#e8eaf0'},
+    rainy:  {bg:'linear-gradient(180deg,#8f97ab 0%,#6b7290 35%,#232a52 100%)', label:'朝・雨 ☔', deco:'rain'}
+  },
+  noon:{
+    sunny:  {bg:'linear-gradient(180deg,#7ec8f0 0%,#a7dcf5 40%,#1e2648 100%)', label:'昼・晴れ ☀️', deco:'sun', sunColor:'#FFE08A'},
+    cloudy: {bg:'linear-gradient(180deg,#aab0c2 0%,#8d93a8 40%,#232a52 100%)', label:'昼・くもり ☁️', deco:'cloud', cloudColor:'#f0f1f5'},
+    rainy:  {bg:'linear-gradient(180deg,#737a92 0%,#5c6280 40%,#1e2648 100%)', label:'昼・雨 ☔', deco:'rain'}
+  },
+  evening:{
+    sunny:  {bg:'linear-gradient(180deg,#ff9d76 0%,#c76b9c 40%,#232a52 100%)', label:'夕方・晴れ ☀️', deco:'sun', sunColor:'#FFB37A'},
+    cloudy: {bg:'linear-gradient(180deg,#a9899e 0%,#7c6a92 40%,#202650 100%)', label:'夕方・くもり ☁️', deco:'cloud', cloudColor:'#cfc2d8'},
+    rainy:  {bg:'linear-gradient(180deg,#6e5b7c 0%,#4f4d72 40%,#181e3e 100%)', label:'夕方・雨 ☔', deco:'rain'}
+  },
+  night:{
+    sunny:  {bg:'linear-gradient(180deg,#0d1230 0%,#1a1f45 70%,#232a52 100%)', label:'夜・快晴 🌙', deco:'moon'},
+    cloudy: {bg:'linear-gradient(180deg,#14172c 0%,#23283f 70%,#232a52 100%)', label:'夜・くもり ☁️', deco:'cloud', cloudColor:'#3a4060'},
+    rainy:  {bg:'linear-gradient(180deg,#0a0c1c 0%,#14172c 70%,#181e3e 100%)', label:'夜・雨 ☔', deco:'rain'}
+  }
+};
+const STAR_POINTS = [[24,20],[70,12],[120,28],[168,16],[210,34],[250,14],[290,24],[318,38],[46,44],[190,46],[270,48],[100,10]];
+const RAIN_LINES = [18,42,66,90,114,138,162,186,210,234,258,282,306,330].map(x=>[x, (x*7)%22]);
+function getTimePeriod(){
+  const h = new Date().getHours();
+  if(h>=5 && h<10) return 'morning';
+  if(h>=10 && h<16) return 'noon';
+  if(h>=16 && h<19) return 'evening';
+  return 'night';
+}
+let currentWeather = null;
+function pickWeather(){
+  const opts = ['sunny','cloudy','rainy'];
+  return opts[Math.floor(Math.random()*opts.length)];
+}
 
 let state = null;
 let selectedSubject = null;
@@ -767,14 +782,75 @@ function renderCity(rawLevel){
   document.getElementById('cityStageName').textContent = stageNameForLevel(level);
   document.getElementById('cityPop').textContent = '人口 '+(level<=1?0:(level-1)*65)+'人';
 
+  const period = getTimePeriod();
+  const weather = currentWeather || (currentWeather = pickWeather());
+  const theme = SKY_THEMES[period][weather];
+  document.getElementById('cityWeather').textContent = theme.label;
+
   const svg = document.getElementById('citySvg');
+  svg.style.background = theme.bg;
   svg.innerHTML = '';
   const NS = 'http://www.w3.org/2000/svg';
+  const windowsLit = (period === 'evening' || period === 'night');
+
+  // sky decoration (drawn first, behind everything)
+  if(theme.deco === 'sun'){
+    const g = document.createElementNS(NS,'g'); g.setAttribute('opacity','0.9');
+    [26,19,13].forEach((r,i)=>{
+      const c = document.createElementNS(NS,'circle');
+      c.setAttribute('cx','58'); c.setAttribute('cy','30'); c.setAttribute('r',r);
+      c.setAttribute('fill', theme.sunColor); c.setAttribute('opacity', i===2?'1':'0.18');
+      g.appendChild(c);
+    });
+    svg.appendChild(g);
+  } else if(theme.deco === 'moon'){
+    STAR_POINTS.forEach(p=>{
+      const st = document.createElementNS(NS,'circle');
+      st.setAttribute('cx',p[0]); st.setAttribute('cy',p[1]); st.setAttribute('r','1.1');
+      st.setAttribute('fill','#FFE8B0'); st.setAttribute('opacity','0.85');
+      svg.appendChild(st);
+    });
+    const moon = document.createElementNS(NS,'circle');
+    moon.setAttribute('cx','280'); moon.setAttribute('cy','26'); moon.setAttribute('r','14');
+    moon.setAttribute('fill','#FFF6DE');
+    svg.appendChild(moon);
+    const bite = document.createElementNS(NS,'circle');
+    bite.setAttribute('cx','286'); bite.setAttribute('cy','21'); bite.setAttribute('r','13');
+    bite.setAttribute('fill', period==='night' ? '#0d1230' : theme.bg.match(/#[0-9a-f]{6}/i)[0]);
+    svg.appendChild(bite);
+  } else if(theme.deco === 'cloud'){
+    const cloudColor = theme.cloudColor;
+    [[50,26,1],[150,18,0.85],[250,30,1.1]].forEach(([cx,cy,scale])=>{
+      const g = document.createElementNS(NS,'g'); g.setAttribute('opacity','0.85');
+      [[-14,4,10],[0,-2,13],[15,4,10],[28,6,8]].forEach(([dx,dy,r])=>{
+        const c = document.createElementNS(NS,'circle');
+        c.setAttribute('cx', cx+dx*scale); c.setAttribute('cy', cy+dy*scale); c.setAttribute('r', r*scale);
+        c.setAttribute('fill', cloudColor);
+        g.appendChild(c);
+      });
+      svg.appendChild(g);
+    });
+  } else if(theme.deco === 'rain'){
+    const dim = document.createElementNS(NS,'rect');
+    dim.setAttribute('x','0'); dim.setAttribute('y','0'); dim.setAttribute('width','340'); dim.setAttribute('height','150');
+    dim.setAttribute('fill','#000010'); dim.setAttribute('opacity','0.12');
+    svg.appendChild(dim);
+    RAIN_LINES.forEach(([x,y])=>{
+      const l = document.createElementNS(NS,'line');
+      l.setAttribute('x1',x); l.setAttribute('y1',y);
+      l.setAttribute('x2',x-6); l.setAttribute('y2',y+16);
+      l.setAttribute('stroke','#cfe4ff'); l.setAttribute('stroke-width','1.4');
+      l.setAttribute('opacity','0.5'); l.setAttribute('stroke-linecap','round');
+      svg.appendChild(l);
+    });
+  }
 
   const ground = document.createElementNS(NS,'rect');
   ground.setAttribute('x','0'); ground.setAttribute('y','130');
   ground.setAttribute('width','340'); ground.setAttribute('height','20');
-  ground.setAttribute('fill', level>=8 ? '#2a3550' : '#3a4a2f');
+  let groundColor = level>=8 ? '#2a3550' : '#3a4a2f';
+  if(weather==='rainy') groundColor = level>=8 ? '#1c2338' : '#28351f';
+  ground.setAttribute('fill', groundColor);
   svg.appendChild(ground);
 
   if(level < 3){
@@ -809,8 +885,13 @@ function renderCity(rawLevel){
         win.setAttribute('x', b.x+4+c*8);
         win.setAttribute('y', 130-h+5+r*11);
         win.setAttribute('width','4'); win.setAttribute('height','5');
-        win.setAttribute('fill', level>=30 ? '#FFD166' : '#FFE8B0');
-        win.setAttribute('opacity', ((r+c)%2===0)?'0.95':'0.5');
+        if(windowsLit){
+          win.setAttribute('fill', level>=30 ? '#FFD166' : '#FFE8B0');
+          win.setAttribute('opacity', ((r+c)%2===0)?'0.95':'0.5');
+        } else {
+          win.setAttribute('fill', '#cfe0f0');
+          win.setAttribute('opacity', '0.2');
+        }
         svg.appendChild(win);
       }
     }
@@ -831,7 +912,7 @@ function renderCity(rawLevel){
     shop.textContent = '🏪';
     svg.appendChild(shop);
   }
-  if(level>=CITY_MAX_LEVEL-5){
+  if(level>=CITY_MAX_LEVEL-5 && windowsLit){
     [ [30,40],[100,25],[260,50],[200,20],[330,60],[70,70] ].forEach(p=>{
       const st = document.createElementNS(NS,'circle');
       st.setAttribute('cx',p[0]); st.setAttribute('cy',p[1]); st.setAttribute('r','1.3');
