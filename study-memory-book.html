@@ -68,6 +68,7 @@ header.topbar{
 .brand-icon.sparkle{animation:sparkle-twinkle 2.2s ease-in-out infinite;}
 @keyframes sparkle-twinkle{0%,100%{opacity:1; transform:scale(1);} 50%{opacity:0.5; transform:scale(0.85);}}
 .brand-sub{font-size:11px; color:var(--text-dim); font-weight:500; margin-top:3px;}
+.nickname-greeting{font-size:13px;color:var(--accent-cyan);font-weight:700;margin:8px 0 2px;}
 .level-badge{
   display:flex; align-items:center; gap:6px;
   background:var(--bg-panel-2); border:1px solid var(--line);
@@ -162,6 +163,17 @@ svg.city-svg{width:100%;height:150px;display:block;border-radius:12px;overflow:h
 .chip.selected{background:linear-gradient(135deg, var(--accent-violet), #6a5fd9); border-color:var(--accent-violet); color:#fff;}
 .chip .ic{display:block;font-size:18px;margin-bottom:3px;}
 .log-hint{font-size:11px;color:var(--text-dim2);margin:-6px 0 12px;}
+.numpad-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;}
+.numpad-btn{
+  aspect-ratio:1;border-radius:12px;
+  background:var(--bg-panel-2); border:1px solid var(--line);
+  font-size:15px; font-weight:700; color:var(--text-main); font-family:'JetBrains Mono',monospace;
+  cursor:pointer; user-select:none; display:flex;align-items:center;justify-content:center;
+  transition:transform .12s, background .12s, border-color .12s;
+}
+.numpad-btn:active{transform:scale(0.92);}
+.numpad-btn.selected{background:linear-gradient(135deg, var(--accent-violet), #6a5fd9); border-color:var(--accent-violet); color:#fff;}
+.time-preview{text-align:center;font-size:18px;font-weight:700;color:var(--accent-gold);margin-bottom:14px;}
 .register-btn{
   width:100%;padding:15px;border-radius:14px;border:none;font-size:15px;font-weight:700;
   cursor:pointer;font-family:'Zen Maru Gothic';margin-bottom:10px;
@@ -304,6 +316,7 @@ svg.city-svg{width:100%;height:150px;display:block;border-radius:12px;overflow:h
       <div class="brand-sub" id="todayLabel">-</div>
     </div>
   </header>
+  <div class="nickname-greeting" id="nicknameGreeting"></div>
   <div class="goal-strip">
     <span id="goalStripText"></span>
     <div class="gear-btn" id="settingsBtn">⚙️</div>
@@ -355,8 +368,13 @@ svg.city-svg{width:100%;height:150px;display:block;border-radius:12px;overflow:h
       <div class="log-hint">① 科目をえらぶ</div>
       <div class="chip-row" id="subjectChips"></div>
 
-      <div class="log-hint">② 勉強した時間をえらぶ</div>
-      <div class="chip-row" id="timeChips"></div>
+      <div class="log-hint">② 時間をえらぶ（時間）</div>
+      <div class="numpad-row" id="hourPad"></div>
+
+      <div class="log-hint">③ 分をえらぶ（5分単位）</div>
+      <div class="numpad-row" id="minutePad"></div>
+
+      <div class="time-preview mono" id="timePreview">0時間 0分</div>
 
       <button class="register-btn" id="registerBtn">登録する</button>
       <div class="log-status" id="logStatus"></div>
@@ -407,8 +425,13 @@ svg.city-svg{width:100%;height:150px;display:block;border-radius:12px;overflow:h
 <div class="overlay hidden" id="onboardOverlay">
   <div class="modal">
     <span class="setup-icon">🚀</span>
-    <h2 style="text-align:center;">目標を設定しよう</h2>
+    <h2 style="text-align:center;">はじめまして！</h2>
     <div class="sub" style="text-align:center;">あとで⚙️アイコンからいつでも変更できるよ</div>
+    <div class="field">
+      <label>ニックネーム</label>
+      <input type="text" id="inputNickname" placeholder="例：みゆ" maxlength="12">
+      <div class="err" id="errNickname">ニックネームを入力してね</div>
+    </div>
     <div class="field">
       <label>目指す学校名</label>
       <input type="text" id="inputGoalName" placeholder="例：〇〇高等学校">
@@ -435,8 +458,13 @@ svg.city-svg{width:100%;height:150px;display:block;border-radius:12px;overflow:h
 
 <div class="overlay hidden" id="settingsOverlay">
   <div class="modal">
-    <h2>目標を編集</h2>
+    <h2>設定を編集</h2>
     <div class="sub">いつでも見直してOK</div>
+    <div class="field">
+      <label>ニックネーム</label>
+      <input type="text" id="editNickname" maxlength="12">
+      <div class="err" id="editErrNickname">ニックネームを入力してね</div>
+    </div>
     <div class="field">
       <label>目指す学校名</label>
       <input type="text" id="editGoalName">
@@ -496,13 +524,6 @@ const SUBJECTS = [
   {id:'rika', name:'理科', icon:'🧪'},
   {id:'shakai', name:'社会', icon:'🗺️'},
   {id:'other', name:'その他', icon:'✏️'}
-];
-const TIME_OPTIONS = [
-  {min:60, label:'1時間'},
-  {min:120, label:'2時間'},
-  {min:180, label:'3時間'},
-  {min:240, label:'4時間'},
-  {min:300, label:'5時間'}
 ];
 const MIN_PER_LEVEL = 300;
 
@@ -602,7 +623,8 @@ const BUILDINGS = [
 
 let state = null;
 let selectedSubject = null;
-let selectedTime = null;
+let selectedHour = null;
+let selectedMinute = null;
 let calYear, calMonth, calSelectedDate;
 
 function todayStr(d){
@@ -633,8 +655,32 @@ async function loadState(){
 async function saveState(){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
 }
-function defaultState(goalName, examDate, dailyTargetMin){
-  return { settings:{goalName, examDate, dailyTargetMin}, logs:[] };
+function defaultState(nickname, goalName, examDate, dailyTargetMin){
+  return { settings:{nickname, goalName, examDate, dailyTargetMin}, logs:[] };
+}
+function nick(){
+  return (state && state.settings && state.settings.nickname) ? state.settings.nickname+'さん' : 'あなた';
+}
+const LOG_MOTIVATIONS = [
+  '{nick}、今日もコツコツ積み上げよう✨',
+  '{nick}、机に向かった時点で半分勝ってるよ！',
+  '{nick}、今日の一歩が未来を変える！',
+  '{nick}、さくっと1教科だけでもやってみよう',
+  '{nick}、昨日の自分に勝ちにいこう！',
+  '{nick}、今日も頑張るあなたはかっこいい',
+  '{nick}、小さな積み重ねが大きな自信になるよ',
+  '{nick}、今この瞬間が伸びしろタイム！',
+  '{nick}、始めてしまえばあとは楽勝！',
+  '{nick}、今日も自分を信じて進もう',
+  '{nick}、勉強スイッチ、オン！',
+  '{nick}、未来の自分がきっと喜ぶよ',
+  '{nick}、頑張った分だけレベルアップ！',
+  '{nick}、今日のあなたが一番輝いてる',
+  '{nick}、さあ、今日の記録をつけよう！'
+];
+function setRandomMotivation(){
+  const msg = LOG_MOTIVATIONS[Math.floor(Math.random()*LOG_MOTIVATIONS.length)].replace('{nick}', nick());
+  document.getElementById('motivationQuote').textContent = msg;
 }
 
 function allLogsTotalMinutes(){ return state.logs.reduce((s,l)=>s+l.minutes,0); }
@@ -654,6 +700,7 @@ function renderAll(){
   const now = new Date();
   document.getElementById('todayLabel').textContent =
     now.getFullYear()+'年'+(now.getMonth()+1)+'月'+now.getDate()+'日 ('+['日','月','火','水','木','金','土'][now.getDay()]+')';
+  document.getElementById('nicknameGreeting').textContent = '👋 '+nick()+'、おかえり！';
 
   const avgLv = averageLevel();
 
@@ -675,7 +722,6 @@ function renderAll(){
   renderSubjectBars();
   renderHistoryStats();
 
-  document.getElementById('motivationQuote').textContent = '今日もコツコツ積み上げよう✨';
 }
 
 function renderStreak(){
@@ -835,25 +881,53 @@ function buildChips(){
     subBox.appendChild(chip);
   });
 
-  const timeBox = document.getElementById('timeChips');
-  timeBox.innerHTML = '';
-  TIME_OPTIONS.forEach(t=>{
-    const chip = document.createElement('div');
-    chip.className = 'chip';
-    chip.innerHTML = `<span class="ic">⏱️</span>${t.label}`;
-    chip.onclick = ()=>{
-      selectedTime = t.min;
-      [...timeBox.children].forEach(c=>c.classList.remove('selected'));
-      chip.classList.add('selected');
+  const hourBox = document.getElementById('hourPad');
+  hourBox.innerHTML = '';
+  for(let h=0; h<=9; h++){
+    const btn = document.createElement('div');
+    btn.className = 'numpad-btn';
+    btn.textContent = h;
+    btn.onclick = ()=>{
+      selectedHour = h;
+      [...hourBox.children].forEach(c=>c.classList.remove('selected'));
+      btn.classList.add('selected');
+      updateTimePreview();
       updateRegisterBtn();
     };
-    timeBox.appendChild(chip);
-  });
+    hourBox.appendChild(btn);
+  }
+
+  const minuteBox = document.getElementById('minutePad');
+  minuteBox.innerHTML = '';
+  for(let m=0; m<60; m+=5){
+    const btn = document.createElement('div');
+    btn.className = 'numpad-btn';
+    btn.textContent = m;
+    btn.onclick = ()=>{
+      selectedMinute = m;
+      [...minuteBox.children].forEach(c=>c.classList.remove('selected'));
+      btn.classList.add('selected');
+      updateTimePreview();
+      updateRegisterBtn();
+    };
+    minuteBox.appendChild(btn);
+  }
+}
+
+function updateTimePreview(){
+  const h = selectedHour !== null ? selectedHour : 0;
+  const m = selectedMinute !== null ? selectedMinute : 0;
+  document.getElementById('timePreview').textContent = h+'時間 '+m+'分';
+}
+
+function currentTotalMinutes(){
+  return (selectedHour !== null ? selectedHour : 0)*60 + (selectedMinute !== null ? selectedMinute : 0);
 }
 
 function updateRegisterBtn(){
   const btn = document.getElementById('registerBtn');
-  if(selectedSubject !== null && selectedTime !== null){
+  const ready = selectedSubject !== null && selectedHour !== null && selectedMinute !== null && currentTotalMinutes() > 0;
+  if(ready){
     btn.classList.add('ready');
   } else {
     btn.classList.remove('ready');
@@ -861,7 +935,8 @@ function updateRegisterBtn(){
 }
 
 document.getElementById('registerBtn').onclick = async ()=>{
-  if(selectedSubject === null || selectedTime === null){
+  const totalMin = currentTotalMinutes();
+  if(selectedSubject === null || selectedHour === null || selectedMinute === null || totalMin <= 0){
     document.getElementById('logStatus').textContent = '科目と時間をえらんでね';
     return;
   }
@@ -871,40 +946,43 @@ document.getElementById('registerBtn').onclick = async ()=>{
   const beforeTodayMin = minutesOnDate(todayStr());
   const dailyTarget = state.settings.dailyTargetMin || 120;
 
-  state.logs.push({date:todayStr(), subject:selectedSubject, minutes:selectedTime});
+  state.logs.push({date:todayStr(), subject:selectedSubject, minutes:totalMin});
 
   const afterSubjectLv = subjectLevel(subjectTotalMinutes(selectedSubject));
   const afterAvg = averageLevel();
-  const afterTodayMin = beforeTodayMin + selectedTime;
+  const afterTodayMin = beforeTodayMin + totalMin;
   const justAchievedToday = beforeTodayMin < dailyTarget && afterTodayMin >= dailyTarget;
 
   document.getElementById('logStatus').textContent = justAchievedToday
-    ? `記録したよ！ +${selectedTime}分 ✨ 🎉今日の目標達成！`
-    : `記録したよ！ +${selectedTime} 分 ✨`;
+    ? `${nick()}、記録したよ！ +${selectedHour}時間${selectedMinute}分 ✨ 🎉今日の目標達成！`
+    : `${nick()}、記録したよ！ +${selectedHour}時間${selectedMinute}分 ✨`;
   fireConfetti();
-  showToast(justAchievedToday ? '🎉 今日の目標達成！' : `+${selectedTime}分 を記録したよ！`);
+  showToast(justAchievedToday ? `🎉 ${nick()}、今日の目標達成！` : `${nick()}、+${selectedHour}時間${selectedMinute}分 を記録したよ！`);
 
   await saveState();
   renderAll();
+  setRandomMotivation();
 
   [...document.getElementById('subjectChips').children].forEach(c=>c.classList.remove('selected'));
-  [...document.getElementById('timeChips').children].forEach(c=>c.classList.remove('selected'));
+  [...document.getElementById('hourPad').children].forEach(c=>c.classList.remove('selected'));
+  [...document.getElementById('minutePad').children].forEach(c=>c.classList.remove('selected'));
   const subjName = SUBJECTS.find(s=>s.id===selectedSubject).name;
-  selectedSubject = null; selectedTime = null;
+  selectedSubject = null; selectedHour = null; selectedMinute = null;
+  updateTimePreview();
   updateRegisterBtn();
 
   if(afterSubjectLv > beforeSubjectLv){
     setTimeout(()=>{
       document.getElementById('levelupIcon').textContent = '🎉';
       document.getElementById('levelupTitle').textContent = '科目レベルアップ！';
-      document.getElementById('levelupText').textContent = subjName+' が Lv.'+afterSubjectLv+' になった！';
+      document.getElementById('levelupText').textContent = nick()+'、'+subjName+' が Lv.'+afterSubjectLv+' になった！';
       document.getElementById('levelupOverlay').classList.remove('hidden');
     }, 500);
   } else if(Math.floor(afterAvg) > Math.floor(beforeAvg)){
     setTimeout(()=>{
       document.getElementById('levelupIcon').textContent = '🏙️';
       document.getElementById('levelupTitle').textContent = '街が発展した！';
-      document.getElementById('levelupText').textContent = 'Lv.'+Math.floor(afterAvg)+' - '+stageNameForLevel(Math.floor(afterAvg));
+      document.getElementById('levelupText').textContent = nick()+'、Lv.'+Math.floor(afterAvg)+' - '+stageNameForLevel(Math.floor(afterAvg));
       document.getElementById('levelupOverlay').classList.remove('hidden');
     }, 500);
   }
@@ -942,12 +1020,14 @@ document.getElementById('weekMinus').onclick = ()=>{ weekTargetHours = Math.max(
 document.getElementById('weekPlus').onclick = ()=>{ weekTargetHours = Math.min(12, weekTargetHours+1); refreshStepperLabel(); };
 
 document.getElementById('onboardSave').onclick = async ()=>{
+  const nickname = document.getElementById('inputNickname').value.trim();
   const name = document.getElementById('inputGoalName').value.trim();
   const date = document.getElementById('inputExamDate').value;
+  document.getElementById('errNickname').style.display = nickname ? 'none' : 'block';
   document.getElementById('errGoalName').style.display = name ? 'none' : 'block';
   document.getElementById('errExamDate').style.display = date ? 'none' : 'block';
-  if(!name || !date) return;
-  state = defaultState(name, date, weekTargetHours*60);
+  if(!nickname || !name || !date) return;
+  state = defaultState(nickname, name, date, weekTargetHours*60);
   await saveState();
   document.getElementById('onboardOverlay').classList.add('hidden');
   buildChips();
@@ -960,6 +1040,7 @@ document.getElementById('editWeekMinus').onclick = ()=>{ editWeekTargetHours = M
 document.getElementById('editWeekPlus').onclick = ()=>{ editWeekTargetHours = Math.min(12, editWeekTargetHours+1); refreshEditStepperLabel(); };
 
 document.getElementById('settingsBtn').onclick = ()=>{
+  document.getElementById('editNickname').value = state.settings.nickname || '';
   document.getElementById('editGoalName').value = state.settings.goalName;
   document.getElementById('editExamDate').value = state.settings.examDate;
   editWeekTargetHours = Math.round((state.settings.dailyTargetMin||120)/60) || 1;
@@ -968,11 +1049,14 @@ document.getElementById('settingsBtn').onclick = ()=>{
 };
 document.getElementById('settingsCancel').onclick = ()=>{ document.getElementById('settingsOverlay').classList.add('hidden'); };
 document.getElementById('settingsSave').onclick = async ()=>{
+  const nickname = document.getElementById('editNickname').value.trim();
   const name = document.getElementById('editGoalName').value.trim();
   const date = document.getElementById('editExamDate').value;
+  document.getElementById('editErrNickname').style.display = nickname ? 'none' : 'block';
   document.getElementById('editErrGoalName').style.display = name ? 'none' : 'block';
   document.getElementById('editErrExamDate').style.display = date ? 'none' : 'block';
-  if(!name || !date) return;
+  if(!nickname || !name || !date) return;
+  state.settings.nickname = nickname;
   state.settings.goalName = name;
   state.settings.examDate = date;
   state.settings.dailyTargetMin = editWeekTargetHours*60;
@@ -988,7 +1072,7 @@ document.getElementById('resetCancelBtn').onclick = ()=>{
 };
 document.getElementById('resetConfirmBtn').onclick = async ()=>{
   const keepSettings = state.settings;
-  state = defaultState(keepSettings.goalName, keepSettings.examDate, keepSettings.dailyTargetMin);
+  state = defaultState(keepSettings.nickname, keepSettings.goalName, keepSettings.examDate, keepSettings.dailyTargetMin);
   await saveState();
   document.getElementById('resetConfirmOverlay').classList.add('hidden');
   document.getElementById('settingsOverlay').classList.add('hidden');
@@ -996,7 +1080,7 @@ document.getElementById('resetConfirmBtn').onclick = async ()=>{
 };
 document.getElementById('levelupClose').onclick = ()=>{ document.getElementById('levelupOverlay').classList.add('hidden'); };
 
-document.getElementById('openLogBtn').onclick = ()=>{ document.getElementById('logScreen').classList.remove('hidden'); };
+document.getElementById('openLogBtn').onclick = ()=>{ setRandomMotivation(); document.getElementById('logScreen').classList.remove('hidden'); };
 document.getElementById('closeLogBtn').onclick = ()=>{ document.getElementById('logScreen').classList.add('hidden'); renderAll(); };
 function openCalendarScreen(){
   const now = new Date();
