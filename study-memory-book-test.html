@@ -115,13 +115,13 @@ header.topbar{
 .slv-label .ic{font-size:16px;}
 .slv-track{flex:1;height:14px;border-radius:7px;background:var(--bg-panel-2);overflow:hidden;position:relative;}
 .slv-fill{height:100%;border-radius:7px;transition:width 0.6s cubic-bezier(.34,1.56,.64,1);background:var(--accent-cyan);}
-.slv-right{flex-shrink:0;min-width:46px;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.slv-right{flex-shrink:0;min-width:58px;display:flex;flex-direction:column;align-items:center;gap:2px;}
 .slv-badge{
   min-width:38px;text-align:center;padding:3px 8px;border-radius:10px;
   font-size:12px;font-weight:700;color:#0A0E27;font-family:'JetBrains Mono',monospace;
   background:var(--accent-cyan);
 }
-.slv-hours{font-size:10px;color:var(--text-dim2);font-family:'JetBrains Mono',monospace;}
+.slv-hours{font-size:9px;color:var(--text-dim2);font-family:'JetBrains Mono',monospace;white-space:nowrap;}
 
 .city-card{padding:16px 14px 14px;}
 .city-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;padding:0 4px;}
@@ -193,11 +193,11 @@ svg.city-svg{width:100%;height:150px;display:block;border-radius:12px;overflow:h
 .sbar-label{width:44px;font-size:12px;color:var(--text-dim);flex-shrink:0;}
 .sbar-track{flex:1;height:9px;border-radius:5px;background:var(--bg-panel-2);overflow:hidden;}
 .sbar-fill{height:100%;border-radius:5px;background:var(--accent-cyan);}
-.sbar-val{width:40px;text-align:right;font-size:11px;color:var(--text-dim2);flex-shrink:0;}
+.sbar-val{width:68px;text-align:right;font-size:10.5px;color:var(--text-dim2);flex-shrink:0;white-space:nowrap;}
 
 .history-stats{display:flex;gap:12px;margin-bottom:12px;}
-.hstat{flex:1;background:var(--bg-panel-2);border-radius:12px;padding:10px 12px;}
-.hstat .num{font-size:18px;font-weight:700;color:var(--accent-cyan);}
+.hstat{flex:1;background:var(--bg-panel-2);border-radius:12px;padding:10px 10px;min-width:0;}
+.hstat .num{font-size:15px;font-weight:700;color:var(--accent-cyan);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .hstat .lbl{font-size:10px;color:var(--text-dim);margin-top:2px;}
 
 .overlay{
@@ -319,6 +319,7 @@ svg.city-svg{width:100%;height:150px;display:block;border-radius:12px;overflow:h
       <div class="brand-title"><span class="brand-icon">🎀</span><span class="brand-grad">Study 思い出帳</span><span class="brand-icon sparkle">✨</span></div>
       <div class="brand-sub" id="todayLabel">-</div>
     </div>
+    <div class="gear-btn" id="refreshBtn" title="画面を更新">🔄</div>
   </header>
   <div class="nickname-greeting" id="nicknameGreeting"></div>
   <div class="goal-strip">
@@ -386,7 +387,7 @@ svg.city-svg{width:100%;height:150px;display:block;border-radius:12px;overflow:h
       <button class="register-btn" id="registerBtn">登録する</button>
       <div class="log-status" id="logStatus"></div>
       <div class="week-mini">
-        <span>今日 <b class="mono" id="weekMinLabel">0h</b> / <span id="weekTargetLabel">0h</span></span>
+        <span>今日 <b class="mono" id="weekMinLabel">0時間0分</b> / <span id="weekTargetLabel">0時間0分</span></span>
         <span id="weekPercentLabel">0%</span>
       </div>
       <div class="progress-bar-outer"><div class="progress-bar-inner" id="weekProgressBar" style="width:0%"></div></div>
@@ -407,7 +408,7 @@ svg.city-svg{width:100%;height:150px;display:block;border-radius:12px;overflow:h
 
     <div class="card">
       <div class="history-stats">
-        <div class="hstat"><div class="num mono" id="totalHoursStat">0h</div><div class="lbl">累積勉強時間</div></div>
+        <div class="hstat"><div class="num mono" id="totalHoursStat">0時間0分</div><div class="lbl">累積勉強時間</div></div>
         <div class="hstat"><div class="num mono" id="todayMinStat">0分</div><div class="lbl">今日の勉強時間</div></div>
       </div>
     </div>
@@ -706,8 +707,9 @@ function minutesOnDate(dstr){ return state.logs.filter(l=>l.date===dstr).reduce(
 function subjectTotalMinutes(subId){ return state.logs.filter(l=>l.subject===subId).reduce((s,l)=>s+l.minutes,0); }
 function subjectMinutesOnDate(subId, dstr){ return state.logs.filter(l=>l.subject===subId && l.date===dstr).reduce((s,l)=>s+l.minutes,0); }
 function hoursLabel(min){
-  const h = min/60;
-  return (Number.isInteger(h) ? h : h.toFixed(1))+'h';
+  const h = Math.floor(min/60);
+  const m = min%60;
+  return h+'時間'+m+'分';
 }
 function averageLevel(){
   const total = SUBJECTS.reduce((s,sub)=>s+subjectLevel(subjectTotalMinutes(sub.id)),0);
@@ -947,7 +949,7 @@ function renderSubjectBars(){
     const pct = Math.min(100, (val/CAP_MIN)*100);
     const row = document.createElement('div');
     row.className = 'sbar-row';
-    row.innerHTML = `<div class="sbar-label">${s.icon} ${s.name}</div><div class="sbar-track"><div class="sbar-fill" style="width:${pct}%"></div></div><div class="sbar-val mono">${val}分</div>`;
+    row.innerHTML = `<div class="sbar-label">${s.icon} ${s.name}</div><div class="sbar-track"><div class="sbar-fill" style="width:${pct}%"></div></div><div class="sbar-val mono">${hoursLabel(val)}</div>`;
     box.appendChild(row);
   });
 }
@@ -1130,6 +1132,14 @@ let editWeekTargetHours = 2;
 function refreshEditStepperLabel(){ document.getElementById('editWeekTargetVal').textContent = editWeekTargetHours+'時間'; }
 document.getElementById('editWeekMinus').onclick = ()=>{ editWeekTargetHours = Math.max(1, editWeekTargetHours-1); refreshEditStepperLabel(); };
 document.getElementById('editWeekPlus').onclick = ()=>{ editWeekTargetHours = Math.min(12, editWeekTargetHours+1); refreshEditStepperLabel(); };
+
+document.getElementById('refreshBtn').onclick = ()=>{
+  const btn = document.getElementById('refreshBtn');
+  btn.style.transition = 'transform 0.5s';
+  btn.style.transform = 'rotate(360deg)';
+  setTimeout(()=>{ btn.style.transition='none'; btn.style.transform='rotate(0deg)'; }, 520);
+  renderAll();
+};
 
 document.getElementById('settingsBtn').onclick = ()=>{
   document.getElementById('editNickname').value = state.settings.nickname || '';
