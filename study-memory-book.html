@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Study思い出帳">
+<title>Study 思い出帳｜学習進捗トラッカー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-void:#0A0E27;
+  --bg-panel:#131A3A;
+  --bg-panel-2:#1B2350;
+  --bg-panel-3:#232C5E;
+  --accent-violet:#8B7FFF;
+  --accent-cyan:#56E8D6;
+  --accent-gold:#FFD166;
+  --accent-pink:#FF6B9D;
+  --text-main:#F4F3FF;
+  --text-dim:#8890B5;
+  --text-dim2:#5C6491;
+  --line:rgba(255,255,255,0.08);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:var(--bg-void);overflow-x:hidden;width:100%;}
+body{
+  font-family:'Zen Kaku Gothic New', sans-serif;
+  color:var(--text-main);
+  min-height:100vh;
+  overscroll-behavior-y:none;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.wrap{max-width:480px;margin:0 auto;padding:0 16px 40px;position:relative;}
+.stars-bg{position:fixed;inset:0;z-index:-1;background:
+  radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6) 0, transparent 50%),
+  radial-gradient(1px 1px at 80% 10%, rgba(255,255,255,0.5) 0, transparent 50%),
+  radial-gradient(1.5px 1.5px at 30% 60%, rgba(255,255,255,0.5) 0, transparent 50%),
+  radial-gradient(1px 1px at 60% 80%, rgba(255,255,255,0.4) 0, transparent 50%),
+  radial-gradient(1px 1px at 90% 55%, rgba(255,255,255,0.5) 0, transparent 50%),
+  radial-gradient(1.5px 1.5px at 45% 30%, rgba(255,255,255,0.4) 0, transparent 50%),
+  radial-gradient(1px 1px at 15% 85%, rgba(255,255,255,0.5) 0, transparent 50%),
+  linear-gradient(180deg, #060815 0%, #0A0E27 40%, #131A3A 100%);
+  background-repeat:no-repeat; background-size:cover;
+}
+h1,h2,h3{font-family:'Zen Maru Gothic', sans-serif; margin:0;}
+.mono{font-family:'JetBrains Mono', monospace;}
+.hidden{display:none !important;}
+
+header.topbar{
+  position:sticky; top:0; z-index:20;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 0 4px;
+  background:linear-gradient(180deg, var(--bg-void) 70%, transparent);
+}
+.brand-title{
+  font-size:21px; font-weight:900; letter-spacing:0.3px;
+  display:flex; align-items:center; gap:5px;
+}
+.brand-grad{
+  background:linear-gradient(120deg, var(--accent-pink), var(--accent-violet) 55%, var(--accent-cyan));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.brand-icon{font-size:19px; line-height:1;}
+.brand-icon.sparkle{animation:sparkle-twinkle 2.2s ease-in-out infinite;}
+@keyframes sparkle-twinkle{0%,100%{opacity:1; transform:scale(1);} 50%{opacity:0.5; transform:scale(0.85);}}
+.brand-sub{font-size:11px; color:var(--text-dim); font-weight:500; margin-top:3px;}
+.level-badge{
+  display:flex; align-items:center; gap:6px;
+  background:var(--bg-panel-2); border:1px solid var(--line);
+  border-radius:20px; padding:6px 12px 6px 6px;
+}
+.level-chip{
+  min-width:26px;height:26px;padding:0 4px;border-radius:13px;
+  background:linear-gradient(135deg, var(--accent-violet), var(--accent-cyan));
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:#0A0E27;
+}
+.level-xp{font-size:11px;color:var(--accent-gold);font-weight:500;}
+
+.goal-strip{font-size:11px;color:var(--text-dim);margin:2px 0 12px;display:flex;align-items:center;justify-content:space-between;}
+.goal-strip b{color:var(--accent-cyan);}
+.gear-btn{
+  width:30px;height:30px;border-radius:50%;flex-shrink:0;
+  background:var(--bg-panel-2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;cursor:pointer;color:var(--text-dim);
+}
+
+.card{
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:14px;
+}
+
+.streak-row{display:flex;align-items:center;justify-content:center;}
+.streak-count{display:flex;align-items:baseline;gap:6px;}
+.streak-num{font-size:22px;font-weight:700;color:var(--accent-pink);}
+.streak-label{font-size:12px;color:var(--text-dim);}
+
+.quote-card{position:relative;padding:20px 18px;}
+.quote-mark{font-size:28px;color:var(--accent-violet);font-family:'Zen Maru Gothic';line-height:1;margin-bottom:4px;}
+.quote-text{font-size:15px;line-height:1.7;font-weight:500;color:var(--text-main);margin-bottom:10px;}
+
+.section-title{font-size:13px;font-weight:700;color:var(--text-dim);margin:0 0 10px;letter-spacing:0.3px;}
+
+.subject-lv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.subject-lv-chip{
+  background:var(--bg-panel-2);border:1px solid var(--line);
+  border-radius:14px;padding:14px 6px;text-align:center;min-height:86px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+}
+.subject-lv-chip .ic{font-size:24px;line-height:1;}
+.subject-lv-chip .nm{font-size:15px;color:var(--text-main);font-weight:700;}
+.subject-lv-chip .lv{font-size:15px;color:var(--accent-cyan);font-weight:700;}
+
+.city-card{padding:16px 14px 14px;}
+.city-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;padding:0 4px;}
+.city-stage-name{font-size:14px;font-weight:700;color:var(--accent-gold);}
+.city-pop{font-size:11px;color:var(--text-dim);}
+svg.city-svg{width:100%;height:150px;display:block;border-radius:12px;overflow:hidden;background:linear-gradient(180deg, #0d1230 0%, #1a1f45 70%, #232a52 100%);}
+.city-foot{font-size:10px;color:var(--text-dim2);text-align:center;margin-top:8px;}
+
+.main-actions{display:flex;gap:10px;margin-top:4px;}
+.action-btn{
+  flex:1;padding:16px 8px;border-radius:16px;border:none;font-size:14px;font-weight:700;
+  cursor:pointer;font-family:'Zen Maru Gothic';display:flex;flex-direction:column;align-items:center;gap:4px;
+}
+.action-btn .ic{font-size:22px;}
+.action-primary{background:linear-gradient(135deg, var(--accent-violet), var(--accent-cyan));color:#0A0E27;}
+.action-secondary{background:var(--bg-panel-2);color:var(--text-main);border:1px solid var(--line);}
+
+.progress-bar-outer{
+  width:100%;height:8px;border-radius:6px;background:var(--bg-panel-2);
+  overflow:hidden;margin-top:6px;
+}
+.progress-bar-inner{
+  height:100%;border-radius:6px;
+  background:linear-gradient(90deg, var(--accent-violet), var(--accent-cyan));
+  transition:width 0.6s cubic-bezier(.34,1.56,.64,1);
+}
+.week-mini{display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);margin-top:12px;}
+
+.log-card .quote{
+  font-size:12px;color:var(--accent-cyan);background:rgba(86,232,214,0.08);
+  border-radius:10px;padding:8px 10px;margin-bottom:12px;line-height:1.5;
+}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.chip{
+  flex:1 1 auto; min-width:56px; text-align:center;
+  padding:10px 6px; border-radius:12px;
+  background:var(--bg-panel-2); border:1px solid var(--line);
+  font-size:13px; font-weight:500; color:var(--text-main);
+  cursor:pointer; user-select:none; transition:transform .12s, background .12s, border-color .12s;
+}
+.chip:active{transform:scale(0.94);}
+.chip.selected{background:linear-gradient(135deg, var(--accent-violet), #6a5fd9); border-color:var(--accent-violet); color:#fff;}
+.chip .ic{display:block;font-size:18px;margin-bottom:3px;}
+.log-hint{font-size:11px;color:var(--text-dim2);margin:-6px 0 12px;}
+.register-btn{
+  width:100%;padding:15px;border-radius:14px;border:none;font-size:15px;font-weight:700;
+  cursor:pointer;font-family:'Zen Maru Gothic';margin-bottom:10px;
+  background:var(--bg-panel-2);color:var(--text-dim2);transition:all .15s;
+}
+.register-btn.ready{background:linear-gradient(135deg, var(--accent-violet), var(--accent-cyan));color:#0A0E27;}
+.log-status{
+  font-size:12px;color:var(--accent-gold);min-height:16px;margin-bottom:4px;font-weight:500;text-align:center;
+}
+
+.subject-bars{display:flex;flex-direction:column;gap:9px;}
+.sbar-row{display:flex;align-items:center;gap:10px;}
+.sbar-label{width:44px;font-size:12px;color:var(--text-dim);flex-shrink:0;}
+.sbar-track{flex:1;height:9px;border-radius:5px;background:var(--bg-panel-2);overflow:hidden;}
+.sbar-fill{height:100%;border-radius:5px;background:var(--accent-cyan);}
+.sbar-val{width:40px;text-align:right;font-size:11px;color:var(--text-dim2);flex-shrink:0;}
+
+.history-stats{display:flex;gap:12px;margin-bottom:12px;}
+.hstat{flex:1;background:var(--bg-panel-2);border-radius:12px;padding:10px 12px;}
+.hstat .num{font-size:18px;font-weight:700;color:var(--accent-cyan);}
+.hstat .lbl{font-size:10px;color:var(--text-dim);margin-top:2px;}
+
+.overlay{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(6,8,21,0.85);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+.modal{
+  width:100%;max-width:400px;
+  background:var(--bg-panel);border:1px solid var(--line);
+  border-radius:20px;padding:24px 20px;
+  max-height:88vh;overflow-y:auto;
+}
+.modal h2{font-size:19px;margin-bottom:4px;}
+.modal .sub{font-size:12px;color:var(--text-dim);margin-bottom:18px;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:500;}
+.field input[type=text], .field input[type=date]{
+  width:100%;background:var(--bg-panel-2);border:1px solid var(--line);
+  border-radius:10px;padding:11px 12px;color:var(--text-main);font-size:15px;
+  font-family:inherit;
+}
+.stepper{display:flex;align-items:center;gap:14px;}
+.stepper button{
+  width:38px;height:38px;border-radius:10px;border:1px solid var(--line);
+  background:var(--bg-panel-2);color:var(--text-main);font-size:18px;cursor:pointer;
+}
+.stepper .val{font-size:18px;font-weight:700;min-width:70px;text-align:center;}
+.modal-actions{display:flex;gap:10px;margin-top:6px;}
+.btn{
+  flex:1;padding:13px;border-radius:12px;border:none;font-size:14px;font-weight:700;
+  cursor:pointer;font-family:inherit;
+}
+.btn-primary{background:linear-gradient(135deg, var(--accent-violet), var(--accent-cyan));color:#0A0E27;}
+.btn-ghost{background:var(--bg-panel-2);color:var(--text-dim);border:1px solid var(--line);}
+.btn-danger-text{background:none;border:none;color:var(--accent-pink);font-size:12px;margin-top:14px;cursor:pointer;text-align:center;width:100%;padding:6px;}
+.err{color:var(--accent-pink);font-size:11px;margin-top:4px;display:none;}
+
+.setup-icon{font-size:40px;text-align:center;display:block;margin-bottom:10px;}
+
+.confetti-layer{position:fixed;inset:0;pointer-events:none;z-index:200;overflow:hidden;}
+.confetti-piece{
+  position:absolute;width:8px;height:8px;top:-10px;
+  animation:confetti-fall 1.1s ease-in forwards;
+}
+@keyframes confetti-fall{
+  to{transform:translateY(110vh) rotate(540deg); opacity:0.3;}
+}
+
+.toast{
+  position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
+  background:var(--bg-panel-3);border:1px solid var(--line);
+  padding:12px 18px;border-radius:14px;font-size:13px;font-weight:500;
+  z-index:150;opacity:0;transition:all .3s;display:flex;align-items:center;gap:8px;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+.footer-tip{font-size:10px;color:var(--text-dim2);text-align:center;margin:18px 0 0;line-height:1.6;}
+
+.subscreen{position:fixed;inset:0;z-index:60;background:var(--bg-void);overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.subscreen-inner{max-width:480px;margin:0 auto;padding:0 16px 40px;}
+.subheader{
+  position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;
+  padding:14px 0 10px;background:linear-gradient(180deg, var(--bg-void) 75%, transparent);
+}
+.back-btn{
+  width:34px;height:34px;border-radius:50%;background:var(--bg-panel-2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text-main);cursor:pointer;flex-shrink:0;
+}
+.subheader h2{font-size:17px;}
+
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.cal-nav button{
+  width:32px;height:32px;border-radius:8px;border:1px solid var(--line);
+  background:var(--bg-panel-2);color:var(--text-main);font-size:14px;cursor:pointer;
+}
+.cal-nav .ym{font-size:15px;font-weight:700;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:12px;}
+.cal-dow{font-size:10px;color:var(--text-dim2);text-align:center;padding-bottom:2px;}
+.cal-cell{
+  aspect-ratio:1;border-radius:8px;position:relative;cursor:pointer;
+  background:var(--bg-panel-2);
+}
+.cal-cell.empty{background:transparent;cursor:default;}
+.cal-cell.l1{background:rgba(86,232,214,0.18);}
+.cal-cell.l2{background:rgba(86,232,214,0.4);}
+.cal-cell.l3{background:rgba(86,232,214,0.75);}
+.cal-cell.today{box-shadow:0 0 0 2px var(--accent-gold);}
+.cal-cell.selected{box-shadow:0 0 0 2px var(--accent-pink);}
+.cal-daynum{
+  position:absolute;top:2px;left:4px;font-size:9px;color:var(--text-dim);z-index:2;
+}
+.cal-cell.l3 .cal-daynum{color:#0A0E27;font-weight:700;}
+.cal-cell.today .cal-daynum{color:var(--accent-gold);font-weight:700;}
+.cal-stamp{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:1;
+}
+.cal-stamp .seal{
+  width:80%;height:80%;border-radius:50%;border:1.6px solid #e0453f;
+  color:#e0453f;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;
+  transform:rotate(-14deg);background:rgba(19,26,58,0.82);letter-spacing:-0.5px;
+}
+.day-detail{background:var(--bg-panel-2);border-radius:12px;padding:12px 14px;margin-bottom:12px;}
+.day-detail-title{font-size:13px;font-weight:700;margin-bottom:8px;}
+.day-detail-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim);padding:3px 0;}
+.day-detail-row b{color:var(--text-main);}
+.day-detail-empty{font-size:12px;color:var(--text-dim2);}
+.cal-summary{display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim);border-top:1px solid var(--line);padding-top:12px;}
+.cal-summary b{color:var(--accent-cyan);}
+</style>
+</head>
+<body>
+<div class="stars-bg"></div>
+<div class="wrap" id="topScreen">
+
+  <header class="topbar">
+    <div>
+      <div class="brand-title"><span class="brand-icon">🎀</span><span class="brand-grad">Study 思い出帳</span><span class="brand-icon sparkle">✨</span></div>
+      <div class="brand-sub" id="todayLabel">-</div>
+    </div>
+  </header>
+  <div class="goal-strip">
+    <span id="goalStripText"></span>
+    <div class="gear-btn" id="settingsBtn">⚙️</div>
+  </div>
+
+  <div class="card quote-card">
+    <div class="quote-text" id="quoteText">-</div>
+  </div>
+
+  <div class="card">
+    <div class="streak-row">
+      <div class="streak-count">
+        <span class="streak-num" id="streakNum">0</span>
+        <span class="streak-label">🔥 日連続で勉強中</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">科目別レベル</div>
+    <div class="subject-lv-grid" id="subjectLvRow"></div>
+  </div>
+
+  <div class="card city-card">
+    <div class="city-head">
+      <div class="city-stage-name" id="cityStageName">ド田舎</div>
+      <div class="city-pop mono" id="cityPop">人口 0人</div>
+    </div>
+    <svg class="city-svg" viewBox="0 0 340 150" id="citySvg"></svg>
+    <div class="city-foot">レベルが上がるほど、街は発展していくよ（Lv1〜50）</div>
+  </div>
+
+  <div class="main-actions">
+    <button class="action-btn action-primary" id="openLogBtn"><span class="ic">✏️</span>記録する</button>
+    <button class="action-btn action-secondary" id="openCalBtn"><span class="ic">📅</span>記録を見る</button>
+  </div>
+
+  <div class="footer-tip">📱 Safariの共有ボタン →「ホーム画面に追加」でアプリのように使えるよ</div>
+</div>
+
+<div class="subscreen hidden" id="logScreen">
+  <div class="subscreen-inner">
+    <div class="subheader"><div class="back-btn" id="closeLogBtn">←</div><h2>記録する</h2></div>
+
+    <div class="card log-card">
+      <div class="section-title">今日の勉強を記録しよう</div>
+      <div class="quote" id="motivationQuote">今日もコツコツ積み上げよう✨</div>
+
+      <div class="log-hint">① 科目をえらぶ</div>
+      <div class="chip-row" id="subjectChips"></div>
+
+      <div class="log-hint">② 勉強した時間をえらぶ</div>
+      <div class="chip-row" id="timeChips"></div>
+
+      <button class="register-btn" id="registerBtn">登録する</button>
+      <div class="log-status" id="logStatus"></div>
+      <div class="week-mini">
+        <span>今日 <b class="mono" id="weekMinLabel">0h</b> / <span id="weekTargetLabel">0h</span></span>
+        <span id="weekPercentLabel">0%</span>
+      </div>
+      <div class="progress-bar-outer"><div class="progress-bar-inner" id="weekProgressBar" style="width:0%"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">科目別バランス（今週）</div>
+      <div class="subject-bars" id="subjectBars"></div>
+    </div>
+
+    <button class="action-btn action-secondary" id="openCalFromLogBtn" style="width:100%;margin-bottom:14px;"><span class="ic">📅</span>記録を見る</button>
+  </div>
+</div>
+
+<div class="subscreen hidden" id="calScreen">
+  <div class="subscreen-inner">
+    <div class="subheader"><div class="back-btn" id="closeCalBtn">←</div><h2>記録を見る</h2></div>
+
+    <div class="card">
+      <div class="history-stats">
+        <div class="hstat"><div class="num mono" id="totalHoursStat">0h</div><div class="lbl">累積勉強時間</div></div>
+        <div class="hstat"><div class="num mono" id="todayMinStat">0分</div><div class="lbl">今日の勉強時間</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="cal-nav">
+        <button type="button" id="calPrev">◀</button>
+        <div class="ym mono" id="calYm">2026年8月</div>
+        <button type="button" id="calNext">▶</button>
+      </div>
+      <div class="cal-grid" id="calDow"></div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="day-detail" id="dayDetail"></div>
+      <div class="cal-summary">
+        <span>この月の合計 <b class="mono" id="calMonthTotal">0h</b></span>
+        <span>累積 <b class="mono" id="calAllTotal">0h</b></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="onboardOverlay">
+  <div class="modal">
+    <span class="setup-icon">🚀</span>
+    <h2 style="text-align:center;">目標を設定しよう</h2>
+    <div class="sub" style="text-align:center;">あとで⚙️アイコンからいつでも変更できるよ</div>
+    <div class="field">
+      <label>目指す学校名</label>
+      <input type="text" id="inputGoalName" placeholder="例：〇〇高等学校">
+      <div class="err" id="errGoalName">学校名を入力してね</div>
+    </div>
+    <div class="field">
+      <label>入試本番の日</label>
+      <input type="date" id="inputExamDate">
+      <div class="err" id="errExamDate">日付を選んでね</div>
+    </div>
+    <div class="field">
+      <label>1日の勉強目標時間</label>
+      <div class="stepper">
+        <button type="button" id="weekMinus">−</button>
+        <div class="val mono" id="weekTargetVal">2時間</div>
+        <button type="button" id="weekPlus">+</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="onboardSave">記録を始める！</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="settingsOverlay">
+  <div class="modal">
+    <h2>目標を編集</h2>
+    <div class="sub">いつでも見直してOK</div>
+    <div class="field">
+      <label>目指す学校名</label>
+      <input type="text" id="editGoalName">
+      <div class="err" id="editErrGoalName">学校名を入力してね</div>
+    </div>
+    <div class="field">
+      <label>入試本番の日</label>
+      <input type="date" id="editExamDate">
+      <div class="err" id="editErrExamDate">日付を選んでね</div>
+    </div>
+    <div class="field">
+      <label>1日の勉強目標時間</label>
+      <div class="stepper">
+        <button type="button" id="editWeekMinus">−</button>
+        <div class="val mono" id="editWeekTargetVal">2時間</div>
+        <button type="button" id="editWeekPlus">+</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="settingsCancel">閉じる</button>
+      <button class="btn btn-primary" id="settingsSave">保存する</button>
+    </div>
+    <button class="btn-danger-text" id="resetDataBtn">記録をすべてリセットする</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="resetConfirmOverlay">
+  <div class="modal" style="text-align:center;">
+    <span class="setup-icon">⚠️</span>
+    <h2>本当にリセットする？</h2>
+    <div class="sub">これまでの勉強記録がすべて消えるよ。この操作は元に戻せません。</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="resetCancelBtn">やめる</button>
+      <button class="btn btn-primary" id="resetConfirmBtn" style="background:linear-gradient(135deg, var(--accent-pink), #c94570); color:#fff;">リセットする</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="levelupOverlay">
+  <div class="modal" style="text-align:center;">
+    <span class="setup-icon" id="levelupIcon" style="font-size:56px;">🎉</span>
+    <h2 id="levelupTitle">レベルアップ！</h2>
+    <div class="sub mono" id="levelupText" style="font-size:15px;color:var(--accent-gold);">Lv.2 になった！</div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="levelupClose">やったー！</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUBJECTS = [
+  {id:'kokugo', name:'国語', icon:'📖'},
+  {id:'math', name:'数学', icon:'📐'},
+  {id:'eigo', name:'英語', icon:'🔤'},
+  {id:'rika', name:'理科', icon:'🧪'},
+  {id:'shakai', name:'社会', icon:'🗺️'},
+  {id:'other', name:'その他', icon:'✏️'}
+];
+const TIME_OPTIONS = [
+  {min:60, label:'1時間'},
+  {min:120, label:'2時間'},
+  {min:180, label:'3時間'},
+  {min:240, label:'4時間'},
+  {min:300, label:'5時間'}
+];
+const MIN_PER_LEVEL = 300;
+
+const QUOTES = [
+  {text:'始める前の一歩が、一番エネルギーを使う。あとは慣れ。', author:'3年前の先輩'},
+  {text:'今日サボっても誰も怒らない。でも未来の自分はちょっと困る。', author:'未来のあなた'},
+  {text:'机に向かった時点で、もう半分勝ってる。', author:'塾の先生'},
+  {text:'わからない問題は、伸びしろの証拠。', author:'家庭教師'},
+  {text:'毎日ちょっとずつ。それが一番強い。', author:'卒業生'},
+  {text:'休むのも作戦のうち。ただし今日は5分だけやろう。', author:'保健室の先生'},
+  {text:'本番はいつも、練習の延長線上にある。', author:'部活の顧問'},
+  {text:'できない日があってもいい。ゼロにしなければOK。', author:'先輩ママ'},
+  {text:'覚えたことは裏切らない。', author:'塾長'},
+  {text:'焦らなくていい、比べるのは去年の自分だけ。', author:'担任の先生'},
+  {text:'1問解けたら、それは今日のヒーロー。', author:'クラスメイト'},
+  {text:'眠い時は寝よう。頭は寝てる間に整理される。', author:'保健の先生'},
+  {text:'苦手科目こそ、伸びしろの宝庫。', author:'家庭教師'},
+  {text:'合格した後の自分に、今日の頑張りを見せてあげよう。', author:'OB'},
+  {text:'コツコツは、いつか爆発力に変わる。', author:'塾の先輩'},
+  {text:'今日の10分は、来月の自分を助けてくれる。', author:'元受験生'},
+  {text:'間違えた問題ほど、覚えている。', author:'先生'},
+  {text:'誰かと比べるより、昨日の自分に勝とう。', author:'コーチ'},
+  {text:'頑張った日はぐっすり眠れる。それでいい。', author:'保護者より'},
+  {text:'一歩ずつでいい、止まらなければ。', author:'マラソン部の先輩'},
+  {text:'テストは実力を測る道具。伸びしろを教えてくれる味方。', author:'塾講師'},
+  {text:'「まあいいか」を1回減らすだけで変わる。', author:'先輩'},
+  {text:'今日やった分だけ、本番の自分が強くなる。', author:'未来のあなた'},
+  {text:'机に向かう5分間が、いちばん尊い。', author:'卒業生より'},
+  {text:'小さな積み重ねが、大きな自信になる。', author:'顧問の先生'},
+  {text:'できたことを数えよう、できなかったことより。', author:'カウンセラー'},
+  {text:'今日の努力は、来年の自分への手紙。', author:'OGより'},
+  {text:'焦りは味方にもなる。上手に使おう。', author:'塾長'},
+  {text:'1日サボっても、それは終わりじゃない、ただの休憩。', author:'保健室より'},
+  {text:'積み上げた時間は、絶対に裏切らない。', author:'先輩たちより'},
+  {text:'今日も一歩。それでじゅうぶん。', author:'Study 思い出帳より'},
+  {text:'小さなことの積み重ねが、とんでもない場所への一番の近道。', author:'イチロー（プロ野球選手）'},
+  {text:'無駄になる努力はない。', author:'川上哲治（プロ野球選手）'},
+  {text:'天才とは、1%のひらめきと99%の努力である。', author:'エジソン（発明家）'},
+  {text:'できると思えばできる、できないと思えばできない。', author:'ヘンリー・フォード（実業家）'},
+  {text:'失敗は成功のもと。', author:'ことわざ'},
+  {text:'小さなことを積み重ねて、大きなことを成す。', author:'二宮尊徳（江戸時代の思想家）'},
+  {text:'三振を恐れていたら、ヒットは打てない。', author:'ベーブ・ルース（野球選手）'},
+  {text:'継続は力なり。', author:'ことわざ'},
+  {text:'千里の道も一歩から。', author:'ことわざ'},
+  {text:'為せば成る、為さねば成らぬ何事も。', author:'上杉鷹山（江戸時代の藩主）'},
+  {text:'雨だれ石を穿つ。', author:'ことわざ'},
+  {text:'練習は嘘をつかない。', author:'スポーツ界の格言'},
+  {text:'今日できることを明日に延ばすな。', author:'ベンジャミン・フランクリン（政治家）'},
+  {text:'走った距離は、裏切らない。', author:'野口みずき（マラソン選手）'},
+  {text:'努力に勝る天才なし。', author:'よく伝わる格言'},
+  {text:'一歩一歩が、遠くまで運んでくれる。', author:'よく伝わる格言'},
+  {text:'明けない夜はない。', author:'ことわざ'},
+  {text:'石の上にも三年。', author:'ことわざ'},
+  {text:'習うより慣れよ。', author:'ことわざ'},
+  {text:'思い立ったが吉日。', author:'ことわざ'},
+  {text:'初心忘るべからず。', author:'世阿弥（能楽師）'},
+  {text:'七転び八起き。', author:'ことわざ'},
+  {text:'継続する人だけが、たどり着ける場所がある。', author:'よく伝わる格言'},
+  {text:'今日の努力は、明日の自分への贈り物。', author:'よく伝わる格言'},
+  {text:'できないと思ったところからが、本当のスタート。', author:'よく伝わる格言'},
+  {text:'努力する人は希望を語り、怠ける人は不満を語る。', author:'よく伝わる格言'},
+  {text:'昨日より今日、今日より明日。', author:'よく伝わる格言'},
+  {text:'やればできる、やらなければ何も始まらない。', author:'よく伝わる格言'},
+  {text:'練習で限界を超えた自分を知っておかないと、本番では勝てない。', author:'古賀稔彦（柔道家）'}
+];
+
+const CITY_STAGES = [
+  {min:1, name:'更地のド田舎'},
+  {min:4, name:'小さな村'},
+  {min:8, name:'にぎやかな村'},
+  {min:12, name:'発展する町'},
+  {min:16, name:'活気ある町'},
+  {min:20, name:'都市'},
+  {min:25, name:'大都市'},
+  {min:30, name:'高層ビルが混ざる都市'},
+  {min:36, name:'ネオン輝く大都会'},
+  {min:43, name:'超高層ビル群'},
+  {min:50, name:'超高層ビルが並ぶ超大都会'}
+];
+const CITY_MAX_LEVEL = 50;
+const BUILDINGS = [
+  {x:10, w:20, unlock:3,  maxH:22,  color:'#4a4f7a'},
+  {x:34, w:22, unlock:5,  maxH:26,  color:'#5a4f9a'},
+  {x:60, w:24, unlock:7,  maxH:32,  color:'#4f6f9a'},
+  {x:88, w:22, unlock:9,  maxH:36,  color:'#4a4f7a'},
+  {x:114,w:26, unlock:12, maxH:44,  color:'#6a5fd9'},
+  {x:144,w:28, unlock:15, maxH:54,  color:'#4f9a8a'},
+  {x:176,w:24, unlock:18, maxH:62,  color:'#8B7FFF'},
+  {x:204,w:30, unlock:22, maxH:74,  color:'#56E8D6'},
+  {x:238,w:26, unlock:26, maxH:86,  color:'#FF6B9D'},
+  {x:268,w:28, unlock:30, maxH:100, color:'#8B7FFF'},
+  {x:300,w:22, unlock:34, maxH:112, color:'#FFD166'},
+  {x:16, w:16, unlock:38, maxH:126, color:'#56E8D6'},
+  {x:322,w:16, unlock:42, maxH:120, color:'#FF6B9D'},
+  {x:150,w:20, unlock:46, maxH:138, color:'#8B7FFF'}
+];
+
+let state = null;
+let selectedSubject = null;
+let selectedTime = null;
+let calYear, calMonth, calSelectedDate;
+
+function todayStr(d){
+  const dt = d || new Date();
+  return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+}
+function startOfWeek(d){
+  const dt = new Date(d);
+  const day = dt.getDay();
+  const diff = (day === 0 ? -6 : 1) - day;
+  dt.setDate(dt.getDate()+diff);
+  dt.setHours(0,0,0,0);
+  return dt;
+}
+function dayOfYear(d){
+  const start = new Date(d.getFullYear(),0,0);
+  return Math.floor((d-start)/86400000);
+}
+function subjectLevel(minutes){ return Math.floor(minutes/MIN_PER_LEVEL)+1; }
+
+const STORAGE_KEY = 'study-memory-book-state';
+async function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    state = raw ? JSON.parse(raw) : null;
+  }catch(e){ state = null; }
+}
+async function saveState(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+function defaultState(goalName, examDate, dailyTargetMin){
+  return { settings:{goalName, examDate, dailyTargetMin}, logs:[] };
+}
+
+function allLogsTotalMinutes(){ return state.logs.reduce((s,l)=>s+l.minutes,0); }
+function minutesOnDate(dstr){ return state.logs.filter(l=>l.date===dstr).reduce((s,l)=>s+l.minutes,0); }
+function subjectTotalMinutes(subId){ return state.logs.filter(l=>l.subject===subId).reduce((s,l)=>s+l.minutes,0); }
+function subjectMinutesOnDate(subId, dstr){ return state.logs.filter(l=>l.subject===subId && l.date===dstr).reduce((s,l)=>s+l.minutes,0); }
+function hoursLabel(min){
+  const h = min/60;
+  return (Number.isInteger(h) ? h : h.toFixed(1))+'h';
+}
+function averageLevel(){
+  const total = SUBJECTS.reduce((s,sub)=>s+subjectLevel(subjectTotalMinutes(sub.id)),0);
+  return total / SUBJECTS.length;
+}
+
+function renderAll(){
+  const now = new Date();
+  document.getElementById('todayLabel').textContent =
+    now.getFullYear()+'年'+(now.getMonth()+1)+'月'+now.getDate()+'日 ('+['日','月','火','水','木','金','土'][now.getDay()]+')';
+
+  const avgLv = averageLevel();
+
+  if(state.settings.examDate){
+    const diffDays = Math.ceil((new Date(state.settings.examDate+'T00:00:00') - new Date(todayStr()+'T00:00:00'))/86400000);
+    document.getElementById('goalStripText').innerHTML = '🎯 <b>'+state.settings.goalName+'</b> まで あと '+(diffDays>=0?diffDays:0)+' 日';
+  } else {
+    document.getElementById('goalStripText').textContent = '';
+  }
+
+  const qIdx = (dayOfYear(now)-1) % QUOTES.length;
+  const q = QUOTES[qIdx];
+  document.getElementById('quoteText').textContent = q.text;
+
+  renderStreak();
+  renderSubjectLevels();
+  renderCity(Math.floor(avgLv));
+  renderWeekMini();
+  renderSubjectBars();
+  renderHistoryStats();
+
+  document.getElementById('motivationQuote').textContent = '今日もコツコツ積み上げよう✨';
+}
+
+function renderStreak(){
+  let streak = 0;
+  let cursor = new Date();
+  if(minutesOnDate(todayStr(cursor)) === 0) cursor.setDate(cursor.getDate()-1);
+  while(minutesOnDate(todayStr(cursor)) > 0){ streak++; cursor.setDate(cursor.getDate()-1); }
+  document.getElementById('streakNum').textContent = streak;
+}
+
+function renderSubjectLevels(){
+  const row = document.getElementById('subjectLvRow');
+  row.innerHTML = '';
+  SUBJECTS.forEach(s=>{
+    const min = subjectTotalMinutes(s.id);
+    const lv = subjectLevel(min);
+    const chip = document.createElement('div');
+    chip.className = 'subject-lv-chip';
+    chip.innerHTML = `<span class="ic">${s.icon}</span><span class="nm">${s.name}</span><span class="lv mono">Lv${lv}</span>`;
+    row.appendChild(chip);
+  });
+}
+
+function stageNameForLevel(level){
+  let name = CITY_STAGES[0].name;
+  CITY_STAGES.forEach(st=>{ if(level>=st.min) name = st.name; });
+  return name;
+}
+
+function renderCity(rawLevel){
+  const level = Math.max(1, Math.min(CITY_MAX_LEVEL, rawLevel));
+  document.getElementById('cityStageName').textContent = stageNameForLevel(level);
+  document.getElementById('cityPop').textContent = '人口 '+(level<=1?0:(level-1)*65)+'人';
+
+  const svg = document.getElementById('citySvg');
+  svg.innerHTML = '';
+  const NS = 'http://www.w3.org/2000/svg';
+
+  const ground = document.createElementNS(NS,'rect');
+  ground.setAttribute('x','0'); ground.setAttribute('y','130');
+  ground.setAttribute('width','340'); ground.setAttribute('height','20');
+  ground.setAttribute('fill', level>=8 ? '#2a3550' : '#3a4a2f');
+  svg.appendChild(ground);
+
+  if(level < 3){
+    for(let i=0;i<6;i++){
+      const g = document.createElementNS(NS,'text');
+      g.setAttribute('x', 20+i*54); g.setAttribute('y','128'); g.setAttribute('font-size','14');
+      g.textContent = '🌾';
+      svg.appendChild(g);
+    }
+    const hut = document.createElementNS(NS,'text');
+    hut.setAttribute('x','150'); hut.setAttribute('y','126'); hut.setAttribute('font-size','22');
+    hut.textContent = '⛺';
+    svg.appendChild(hut);
+  }
+
+  BUILDINGS.forEach((b, idx)=>{
+    if(level < b.unlock) return;
+    const growth = Math.min(1, 0.35 + (level - b.unlock)*0.025);
+    const h = Math.max(14, b.maxH*growth);
+    const rect = document.createElementNS(NS,'rect');
+    rect.setAttribute('x', b.x); rect.setAttribute('y', 130-h);
+    rect.setAttribute('width', b.w); rect.setAttribute('height', h);
+    rect.setAttribute('rx','2'); rect.setAttribute('fill', b.color);
+    svg.appendChild(rect);
+
+    const rows = Math.max(1, Math.floor(h/13));
+    const cols = Math.max(1, Math.floor(b.w/9));
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        if((r+c+idx)%3===0) continue;
+        const win = document.createElementNS(NS,'rect');
+        win.setAttribute('x', b.x+4+c*8);
+        win.setAttribute('y', 130-h+5+r*11);
+        win.setAttribute('width','4'); win.setAttribute('height','5');
+        win.setAttribute('fill', level>=30 ? '#FFD166' : '#FFE8B0');
+        win.setAttribute('opacity', ((r+c)%2===0)?'0.95':'0.5');
+        svg.appendChild(win);
+      }
+    }
+  });
+
+  if(level>=4){
+    [40,170,300].forEach((x,i)=>{
+      if(level < 4+i*6) return;
+      const t = document.createElementNS(NS,'text');
+      t.setAttribute('x', x); t.setAttribute('y','132'); t.setAttribute('font-size','16');
+      t.textContent = '🌳';
+      svg.appendChild(t);
+    });
+  }
+  if(level>=6){
+    const shop = document.createElementNS(NS,'text');
+    shop.setAttribute('x','92'); shop.setAttribute('y','126'); shop.setAttribute('font-size','16');
+    shop.textContent = '🏪';
+    svg.appendChild(shop);
+  }
+  if(level>=CITY_MAX_LEVEL-5){
+    [ [30,40],[100,25],[260,50],[200,20],[330,60],[70,70] ].forEach(p=>{
+      const st = document.createElementNS(NS,'circle');
+      st.setAttribute('cx',p[0]); st.setAttribute('cy',p[1]); st.setAttribute('r','1.3');
+      st.setAttribute('fill','#FFD166');
+      svg.appendChild(st);
+    });
+  }
+}
+
+function renderWeekMini(){
+  const todayMin = minutesOnDate(todayStr());
+  const target = state.settings.dailyTargetMin || 120;
+  const pct = Math.max(0, Math.min(1, todayMin/target));
+  document.getElementById('weekMinLabel').textContent = hoursLabel(todayMin);
+  document.getElementById('weekTargetLabel').textContent = hoursLabel(target);
+  document.getElementById('weekPercentLabel').textContent = Math.round(pct*100)+'%';
+  document.getElementById('weekProgressBar').style.width = (pct*100)+'%';
+}
+
+function renderSubjectBars(){
+  const sow = startOfWeek(new Date());
+  const weekDates = [];
+  for(let i=0;i<7;i++){ const d=new Date(sow); d.setDate(d.getDate()+i); weekDates.push(todayStr(d)); }
+  const sums = {};
+  SUBJECTS.forEach(s=>sums[s.id]=0);
+  state.logs.filter(l=>weekDates.includes(l.date)).forEach(l=>{ sums[l.subject]=(sums[l.subject]||0)+l.minutes; });
+  const CAP_MIN = 1200;
+  const box = document.getElementById('subjectBars');
+  box.innerHTML = '';
+  SUBJECTS.forEach(s=>{
+    const val = sums[s.id]||0;
+    const pct = Math.min(100, (val/CAP_MIN)*100);
+    const row = document.createElement('div');
+    row.className = 'sbar-row';
+    row.innerHTML = `<div class="sbar-label">${s.icon} ${s.name}</div><div class="sbar-track"><div class="sbar-fill" style="width:${pct}%"></div></div><div class="sbar-val mono">${val}分</div>`;
+    box.appendChild(row);
+  });
+}
+
+function renderHistoryStats(){
+  document.getElementById('totalHoursStat').textContent = hoursLabel(allLogsTotalMinutes());
+  document.getElementById('todayMinStat').textContent = minutesOnDate(todayStr())+'分';
+}
+
+function buildChips(){
+  const subBox = document.getElementById('subjectChips');
+  subBox.innerHTML = '';
+  SUBJECTS.forEach(s=>{
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.innerHTML = `<span class="ic">${s.icon}</span>${s.name}`;
+    chip.onclick = ()=>{
+      selectedSubject = s.id;
+      [...subBox.children].forEach(c=>c.classList.remove('selected'));
+      chip.classList.add('selected');
+      updateRegisterBtn();
+    };
+    subBox.appendChild(chip);
+  });
+
+  const timeBox = document.getElementById('timeChips');
+  timeBox.innerHTML = '';
+  TIME_OPTIONS.forEach(t=>{
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.innerHTML = `<span class="ic">⏱️</span>${t.label}`;
+    chip.onclick = ()=>{
+      selectedTime = t.min;
+      [...timeBox.children].forEach(c=>c.classList.remove('selected'));
+      chip.classList.add('selected');
+      updateRegisterBtn();
+    };
+    timeBox.appendChild(chip);
+  });
+}
+
+function updateRegisterBtn(){
+  const btn = document.getElementById('registerBtn');
+  if(selectedSubject !== null && selectedTime !== null){
+    btn.classList.add('ready');
+  } else {
+    btn.classList.remove('ready');
+  }
+}
+
+document.getElementById('registerBtn').onclick = async ()=>{
+  if(selectedSubject === null || selectedTime === null){
+    document.getElementById('logStatus').textContent = '科目と時間をえらんでね';
+    return;
+  }
+
+  const beforeSubjectLv = subjectLevel(subjectTotalMinutes(selectedSubject));
+  const beforeAvg = averageLevel();
+  const beforeTodayMin = minutesOnDate(todayStr());
+  const dailyTarget = state.settings.dailyTargetMin || 120;
+
+  state.logs.push({date:todayStr(), subject:selectedSubject, minutes:selectedTime});
+
+  const afterSubjectLv = subjectLevel(subjectTotalMinutes(selectedSubject));
+  const afterAvg = averageLevel();
+  const afterTodayMin = beforeTodayMin + selectedTime;
+  const justAchievedToday = beforeTodayMin < dailyTarget && afterTodayMin >= dailyTarget;
+
+  document.getElementById('logStatus').textContent = justAchievedToday
+    ? `記録したよ！ +${selectedTime}分 ✨ 🎉今日の目標達成！`
+    : `記録したよ！ +${selectedTime} 分 ✨`;
+  fireConfetti();
+  showToast(justAchievedToday ? '🎉 今日の目標達成！' : `+${selectedTime}分 を記録したよ！`);
+
+  await saveState();
+  renderAll();
+
+  [...document.getElementById('subjectChips').children].forEach(c=>c.classList.remove('selected'));
+  [...document.getElementById('timeChips').children].forEach(c=>c.classList.remove('selected'));
+  const subjName = SUBJECTS.find(s=>s.id===selectedSubject).name;
+  selectedSubject = null; selectedTime = null;
+  updateRegisterBtn();
+
+  if(afterSubjectLv > beforeSubjectLv){
+    setTimeout(()=>{
+      document.getElementById('levelupIcon').textContent = '🎉';
+      document.getElementById('levelupTitle').textContent = '科目レベルアップ！';
+      document.getElementById('levelupText').textContent = subjName+' が Lv.'+afterSubjectLv+' になった！';
+      document.getElementById('levelupOverlay').classList.remove('hidden');
+    }, 500);
+  } else if(Math.floor(afterAvg) > Math.floor(beforeAvg)){
+    setTimeout(()=>{
+      document.getElementById('levelupIcon').textContent = '🏙️';
+      document.getElementById('levelupTitle').textContent = '街が発展した！';
+      document.getElementById('levelupText').textContent = 'Lv.'+Math.floor(afterAvg)+' - '+stageNameForLevel(Math.floor(afterAvg));
+      document.getElementById('levelupOverlay').classList.remove('hidden');
+    }, 500);
+  }
+};
+
+function fireConfetti(){
+  const layer = document.createElement('div');
+  layer.className = 'confetti-layer';
+  document.body.appendChild(layer);
+  const colors = ['#8B7FFF','#56E8D6','#FFD166','#FF6B9D'];
+  for(let i=0;i<24;i++){
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = (Math.random()*100)+'vw';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.animationDelay = (Math.random()*0.3)+'s';
+    p.style.borderRadius = Math.random()>0.5 ? '50%':'2px';
+    layer.appendChild(p);
+  }
+  setTimeout(()=>layer.remove(), 1500);
+}
+
+let toastTimer = null;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.innerHTML = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+let weekTargetHours = 2;
+function refreshStepperLabel(){ document.getElementById('weekTargetVal').textContent = weekTargetHours+'時間'; }
+document.getElementById('weekMinus').onclick = ()=>{ weekTargetHours = Math.max(1, weekTargetHours-1); refreshStepperLabel(); };
+document.getElementById('weekPlus').onclick = ()=>{ weekTargetHours = Math.min(12, weekTargetHours+1); refreshStepperLabel(); };
+
+document.getElementById('onboardSave').onclick = async ()=>{
+  const name = document.getElementById('inputGoalName').value.trim();
+  const date = document.getElementById('inputExamDate').value;
+  document.getElementById('errGoalName').style.display = name ? 'none' : 'block';
+  document.getElementById('errExamDate').style.display = date ? 'none' : 'block';
+  if(!name || !date) return;
+  state = defaultState(name, date, weekTargetHours*60);
+  await saveState();
+  document.getElementById('onboardOverlay').classList.add('hidden');
+  buildChips();
+  renderAll();
+};
+
+let editWeekTargetHours = 2;
+function refreshEditStepperLabel(){ document.getElementById('editWeekTargetVal').textContent = editWeekTargetHours+'時間'; }
+document.getElementById('editWeekMinus').onclick = ()=>{ editWeekTargetHours = Math.max(1, editWeekTargetHours-1); refreshEditStepperLabel(); };
+document.getElementById('editWeekPlus').onclick = ()=>{ editWeekTargetHours = Math.min(12, editWeekTargetHours+1); refreshEditStepperLabel(); };
+
+document.getElementById('settingsBtn').onclick = ()=>{
+  document.getElementById('editGoalName').value = state.settings.goalName;
+  document.getElementById('editExamDate').value = state.settings.examDate;
+  editWeekTargetHours = Math.round((state.settings.dailyTargetMin||120)/60) || 1;
+  refreshEditStepperLabel();
+  document.getElementById('settingsOverlay').classList.remove('hidden');
+};
+document.getElementById('settingsCancel').onclick = ()=>{ document.getElementById('settingsOverlay').classList.add('hidden'); };
+document.getElementById('settingsSave').onclick = async ()=>{
+  const name = document.getElementById('editGoalName').value.trim();
+  const date = document.getElementById('editExamDate').value;
+  document.getElementById('editErrGoalName').style.display = name ? 'none' : 'block';
+  document.getElementById('editErrExamDate').style.display = date ? 'none' : 'block';
+  if(!name || !date) return;
+  state.settings.goalName = name;
+  state.settings.examDate = date;
+  state.settings.dailyTargetMin = editWeekTargetHours*60;
+  await saveState();
+  document.getElementById('settingsOverlay').classList.add('hidden');
+  renderAll();
+};
+document.getElementById('resetDataBtn').onclick = ()=>{
+  document.getElementById('resetConfirmOverlay').classList.remove('hidden');
+};
+document.getElementById('resetCancelBtn').onclick = ()=>{
+  document.getElementById('resetConfirmOverlay').classList.add('hidden');
+};
+document.getElementById('resetConfirmBtn').onclick = async ()=>{
+  const keepSettings = state.settings;
+  state = defaultState(keepSettings.goalName, keepSettings.examDate, keepSettings.dailyTargetMin);
+  await saveState();
+  document.getElementById('resetConfirmOverlay').classList.add('hidden');
+  document.getElementById('settingsOverlay').classList.add('hidden');
+  renderAll();
+};
+document.getElementById('levelupClose').onclick = ()=>{ document.getElementById('levelupOverlay').classList.add('hidden'); };
+
+document.getElementById('openLogBtn').onclick = ()=>{ document.getElementById('logScreen').classList.remove('hidden'); };
+document.getElementById('closeLogBtn').onclick = ()=>{ document.getElementById('logScreen').classList.add('hidden'); renderAll(); };
+function openCalendarScreen(){
+  const now = new Date();
+  calYear = now.getFullYear(); calMonth = now.getMonth(); calSelectedDate = todayStr();
+  renderHistoryStats();
+  renderCalendar();
+  document.getElementById('calScreen').classList.remove('hidden');
+}
+document.getElementById('openCalBtn').onclick = openCalendarScreen;
+document.getElementById('openCalFromLogBtn').onclick = openCalendarScreen;
+document.getElementById('closeCalBtn').onclick = ()=>{ document.getElementById('calScreen').classList.add('hidden'); };
+
+function renderDayDetail(ds){
+  const box = document.getElementById('dayDetail');
+  const d = new Date(ds+'T00:00:00');
+  const rows = SUBJECTS.map(s=>{
+    const m = subjectMinutesOnDate(s.id, ds);
+    return m>0 ? `<div class="day-detail-row"><span>${s.icon} ${s.name}</span><b class="mono">${m}分</b></div>` : '';
+  }).join('');
+  const total = minutesOnDate(ds);
+  box.innerHTML = `<div class="day-detail-title">${d.getMonth()+1}月${d.getDate()}日の記録（合計 ${total}分）</div>` +
+    (total>0 ? rows : '<div class="day-detail-empty">この日はまだ記録がないよ</div>');
+}
+
+function renderCalendar(){
+  const dow = document.getElementById('calDow');
+  if(dow.children.length===0){
+    ['月','火','水','木','金','土','日'].forEach(l=>{
+      const d = document.createElement('div'); d.className='cal-dow'; d.textContent=l; dow.appendChild(d);
+    });
+  }
+  document.getElementById('calYm').textContent = calYear+'年'+(calMonth+1)+'月';
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  const first = new Date(calYear, calMonth, 1);
+  const startOffset = (first.getDay()===0) ? 6 : first.getDay()-1;
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+
+  for(let i=0;i<startOffset;i++){
+    const c = document.createElement('div'); c.className='cal-cell empty'; grid.appendChild(c);
+  }
+  let monthTotal = 0;
+  const dailyTarget = state.settings.dailyTargetMin || 120;
+  for(let d=1; d<=daysInMonth; d++){
+    const ds = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const min = minutesOnDate(ds);
+    monthTotal += min;
+    const c = document.createElement('div');
+    let lvl = '';
+    if(min>0 && min<60) lvl='l1'; else if(min>=60 && min<180) lvl='l2'; else if(min>=180) lvl='l3';
+    c.className = 'cal-cell '+lvl+(ds===todayStr()?' today':'')+(ds===calSelectedDate?' selected':'');
+    const dayNum = document.createElement('div');
+    dayNum.className = 'cal-daynum';
+    dayNum.textContent = d;
+    c.appendChild(dayNum);
+    if(min >= dailyTarget){
+      const stampWrap = document.createElement('div');
+      stampWrap.className = 'cal-stamp';
+      stampWrap.innerHTML = '<div class="seal">達成</div>';
+      c.appendChild(stampWrap);
+    }
+    c.onclick = ()=>{ calSelectedDate = ds; renderCalendar(); };
+    grid.appendChild(c);
+  }
+  document.getElementById('calMonthTotal').textContent = hoursLabel(monthTotal);
+  document.getElementById('calAllTotal').textContent = hoursLabel(allLogsTotalMinutes());
+  renderDayDetail(calSelectedDate);
+}
+document.getElementById('calPrev').onclick = ()=>{
+  calMonth--; if(calMonth<0){calMonth=11; calYear--;}
+  renderCalendar();
+};
+document.getElementById('calNext').onclick = ()=>{
+  calMonth++; if(calMonth>11){calMonth=0; calYear++;}
+  renderCalendar();
+};
+
+async function init(){
+  buildChips();
+  await loadState();
+  if(!state){
+    document.getElementById('onboardOverlay').classList.remove('hidden');
+  } else {
+    renderAll();
+  }
+}
+init();
+</script>
+</body>
+</html>
