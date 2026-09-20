@@ -55,6 +55,8 @@ input{width:100%;font:700 15px var(--font-b);padding:8px 12px;border-radius:12px
 input::placeholder{color:#6f85ab}
 .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
 .seg.two{grid-template-columns:1fr 1fr}
+.seg.four{grid-template-columns:repeat(4,1fr)}
+.seg.four button{padding:7px 2px}
 .seg.spots{grid-template-columns:repeat(3,1fr)}
 .seg.spots button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;line-height:1.2;padding:5px 2px}
 .seg.spots button small{font-size:10px;font-weight:800;color:var(--amber);opacity:.95}
@@ -67,6 +69,7 @@ input::placeholder{color:#6f85ab}
 .seg.green button[aria-pressed="true"]{color:#0d3322;border-color:rgba(255,255,255,.5);
   background:linear-gradient(180deg,#94ecb6,#46c184);box-shadow:0 4px 14px rgba(70,193,132,.42),0 1px 0 rgba(255,255,255,.5) inset}
 .hint{font-size:11px;color:var(--ink-soft);margin-top:4px}
+.name-note{color:#ffc24a;font-weight:800}
 .err{color:var(--err);font-weight:800;font-size:14px;text-align:center}
 .err:empty{display:none}
 .btn-start{font:400 22px var(--font-d);color:#fff;border:0;border-radius:16px;padding:9px;letter-spacing:.06em;
@@ -106,24 +109,24 @@ input::placeholder{color:#6f85ab}
 /* プレイ中 */
 #hud{position:absolute;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top)*.45 + 1px) 10px 0;display:none;pointer-events:none}
 #hud.show{display:block}
-.sb{display:grid;grid-template-columns:1.25fr 1fr 1fr;background:rgba(9,17,32,.88);border:2px solid #39445f;border-radius:11px;
-  box-shadow:0 3px 0 rgba(0,0,0,.3);max-width:300px;margin:0 auto;overflow:hidden}
-.sb .cell{display:flex;flex-direction:column;align-items:center;padding:1px 2px 3px;border-left:2px solid #1f283d}
+.sb{display:grid;grid-template-columns:1.25fr 1fr 1fr;background:rgba(9,17,32,.88);border:2px solid #39445f;border-radius:13px;
+  box-shadow:0 3px 0 rgba(0,0,0,.3);max-width:318px;margin:0 auto;overflow:hidden}
+.sb .cell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:5px 2px 6px;border-left:2px solid #1f283d}
 .sb .cell:first-child{border-left:0}
-.sb .k{font:800 9px var(--font-b);color:#9fb0d4}
-  .sb .v{font:400 21px/1.02 var(--font-d);color:var(--amber);text-shadow:0 0 10px rgba(255,180,35,.55);font-variant-numeric:tabular-nums;display:inline-block}
+.sb .k{font:800 10px var(--font-b);color:#9fb0d4;letter-spacing:.06em}
+  .sb .v{font:400 28px/1.0 var(--font-d);color:var(--amber);text-shadow:0 0 10px rgba(255,180,35,.55);font-variant-numeric:tabular-nums;display:inline-block}
 .sb .v.warn{color:#ff5a3c;text-shadow:0 0 12px rgba(255,90,60,.7)}
 .pop{animation:pop .3s ease-out}
 @keyframes pop{from{transform:scale(1.6)}to{transform:scale(1)}}
-.quit{pointer-events:auto;position:absolute;left:10px;top:calc(env(safe-area-inset-top)*.45 + 52px);font:800 12px var(--font-b);color:#dfe6f5;
+.quit{pointer-events:auto;position:absolute;left:10px;top:calc(env(safe-area-inset-top)*.45 + 66px);font:800 12px var(--font-b);color:#dfe6f5;
   background:rgba(11,17,32,.65);border:1px solid #39445f;border-radius:999px;padding:6px 12px}
 #count{position:absolute;left:0;right:0;top:42%;text-align:center;font:400 90px var(--font-d);color:#eaf1fb;
   text-shadow:0 6px 0 #1f63c8,0 0 30px rgba(0,0,0,.6);pointer-events:none;display:none}
 #count.show{display:block;animation:cnt .6s ease-out}
 #count.small{font-size:54px}
 @keyframes cnt{0%{transform:scale(1.8);opacity:0}35%{transform:scale(1);opacity:1}100%{opacity:1}}
-#tip{position:absolute;left:12px;right:64px;bottom:calc(env(safe-area-inset-bottom) + 12px);text-align:center;font:800 14px/1.45 var(--font-b);
-  color:#fff7ea;background:rgba(11,17,32,.72);border-radius:12px;padding:8px 10px;pointer-events:none;display:none}
+#tip{position:absolute;left:12px;right:64px;bottom:calc(env(safe-area-inset-bottom) + 12px);text-align:center;font:800 14px/1.5 var(--font-b);
+  color:#fff7ea;background:rgba(11,17,32,.72);border-radius:12px;padding:9px 10px;pointer-events:none;display:none;white-space:pre-line}
 #tip.show{display:block}
 
 /* 結果 */
@@ -257,9 +260,10 @@ input::placeholder{color:#6f85ab}
       </div>
     </div>
     <div class="panel sheet">
-      <label><span class="lbl">ニックネーム</span><input id="nameInput" maxlength="10" placeholder="なくてもOK" autocomplete="off" enterkeyhint="done"></label>
+      <label><span class="lbl">ニックネーム</span><input id="nameInput" maxlength="10" placeholder="なまえを入れよう" autocomplete="off" enterkeyhint="done">
+        <p class="hint name-note">※入れないとランキングに記録が残りません</p></label>
       <div><span class="lbl">シュート位置</span><div class="seg spots" id="spotSeg"></div><p class="hint" id="spotHint"></p></div>
-      <div><span class="lbl">コート</span><div class="seg two" id="stageSeg"></div></div>
+      <div><span class="lbl">コート</span><div class="seg four" id="stageSeg"></div></div>
       <div class="opts">
         <span class="opt-ttl">オプション</span>
         <div class="two-up">
@@ -1700,7 +1704,7 @@ function bump(id){ const el = $(id); el.classList.remove('pop'); void el.offsetW
 
 function show(id){ document.querySelectorAll('.screen').forEach(s => s.classList.toggle('show', s.id === id)); }
 function setHud(on){ $('hud').classList.toggle('show', on); }
-function setTip(text){ const el = $('tip'); el.textContent = text || ''; el.classList.toggle('show', !!text); }
+function setTip(text){ const el = $('tip'); el.textContent = text || ''; el.classList.toggle('show', !!text); }   // 改行は \n で入れる
 function showCount(text, small){
   const el = $('count'); el.textContent = text; el.classList.toggle('small', !!small);
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
@@ -1712,7 +1716,7 @@ function startGame(){
     timeLeft:G.time, balls:[], texts:[], fire:G.relax, spotLight:0, nextBallT:0, padT:1, charging:false, power:0, endT:0, flash:0, shake:0, shrink:0});
   G.aimPhase = Math.random()*6;
   show(''); setHud(true); updateHud(true);
-  setTip(G.relax ? 'ストレス解消モード！ 記録は残らないので好きなだけ打とう' : '長押しでパワーをためて、緑のゾーンで離そう！');
+  setTip(G.relax ? 'ストレス解消モード！\n記録は残らないので好きなだけ打とう' : '長押しでパワーをためて\n緑のゾーンで離そう！');
 }
 function quitGame(){
   G.state = 'title'; G.balls = []; G.charging = false; G.power = 0; G.texts = []; G.fire = false; G.relax = false; G.spotLight = 0;
@@ -1941,7 +1945,8 @@ function finishGame(){
     }, 320);
   });
   if (G.relax){ $('rRank').textContent = 'ストレス解消モードはランキングに登録されません'; G.lastEntry = null; }
-  else register({name:G.name || 'ゲスト', score:finalScore, streak:G.maxStreak, spot:G.spot, at:Date.now()}, key);
+  else if (!G.name){ $('rRank').textContent = 'ニックネームを入れるとランキングに記録が残ります'; G.lastEntry = null; }
+  else register({name:G.name, score:finalScore, streak:G.maxStreak, spot:G.spot, at:Date.now()}, key);
 }
 async function register(entry, key){
   const el = $('rRank');
