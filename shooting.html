@@ -196,6 +196,10 @@ input::placeholder{color:#6f85ab}
   input{padding:6px 10px;font-size:14px}
   .lbl{margin-bottom:3px;font-size:9px}
   .hint{font-size:10px;margin-top:3px}
+  .sb .cell{padding:3px 2px 4px}
+  .sb .k{font-size:9px}
+  .sb .v{font-size:23px}
+  .quit{top:calc(env(safe-area-inset-top)*.45 + 56px)}
   .btn-start{padding:7px;font-size:19px;border-radius:14px}
   .btn-relax{padding:5px;font-size:15px;border-radius:12px}
   .btn-relax small{font-size:9px}
@@ -233,6 +237,9 @@ input::placeholder{color:#6f85ab}
   .seg button{padding:4px 3px;font-size:12px}
   .lbl{font-size:8px;margin-bottom:2px}
   .hint{display:none}
+  .sb .cell{padding:2px 2px 3px}
+  .sb .v{font-size:21px}
+  .quit{top:calc(env(safe-area-inset-top)*.45 + 50px)}
   .btn-start{padding:6px;font-size:17px}
   .btn-relax{padding:4px;font-size:14px}
   .btn-relax small{display:none}
@@ -447,7 +454,7 @@ const STAGES = {
 const stageCfg = () => STAGES[G.stage] || STAGES.gym;
 
 /* カメラ（シューターの少し後ろから見る） */
-const CAM = {fov:.72, back:3.2, h:3.05, release:1.95, lookZ:.8, lift:.055};  // lift=画面をどれだけ上へずらすか
+const CAM = {fov:.72, back:3.2, h:3.05, release:1.95, lookZ:.8, lift:.01};   // lift=画面をどれだけ上へずらすか（小さいほど下がる）
 /* シュート位置。pos=立ち位置[x,y]、arc=山なりの高さ、zoneMul=パワーゾーンの広さ */
 /* シュート位置。pts=1本の点数、diff=タイミングの難しさ、zoneMul=ゾーンの広さ */
 /* シュート位置。pts=1本の点数、diff=タイミングの難しさ、zoneMul=ゾーンの広さ。並び順はボタンの並びと同じ */
@@ -729,7 +736,8 @@ function layout(){
   const r = v3.norm(v3.cross(f, [0, 0, 1]));
   const u = v3.cross(r, f);
   G.cam = {C, f, r, u, F:H*CAM.fov};
-  G.cy = H*(.5 - CAM.lift);          // 画面の中心（少し上にずらす）
+  /* 画面の中心。低い画面ではスコア枠のぶんだけさらに下げて、ボールが隠れないようにする */
+  G.cy = H*(.5 - CAM.lift) + Math.max(0, 40 - H*.045);
   G.dir = dir; G.lat = [-dir[1], dir[0]];
   G.shotDist = L;
   G.feet = [P[0], P[1]];
