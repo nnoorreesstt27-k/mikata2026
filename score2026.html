@@ -483,6 +483,7 @@ const SEASON_DATA = {"team": "美賀多台", "asOf": "2026-09-20", "players": ["
 </script>
 <script>
 let D = SEASON_DATA;
+const GLOBAL_MAX_PTS = Math.max(5, ...D.games.flatMap(g=>D.players.map(p=>g.pts[p]||0)));
 let curPlayer = null, rankScope = 'all', gameFilter = 'all';
 
 const $ = s => document.querySelector(s);
@@ -756,21 +757,21 @@ function renderPlayerTrend(){
   const W = Math.max(cw, 300), H = 210, pad = 28;
   const vals = s.app.map(g=>g.pts[curPlayer]||0);
   if(!vals.length){ box.innerHTML = '<p class="muted">出場記録がありません。</p>'; return; }
-  const maxV = Math.max(...vals, 5);
-  const pt = (i,v)=>[pad + i*(W-pad*2)/Math.max(vals.length-1,1), H-28-(v/maxV)*(H-58)];
-  const line = vals.map((v,i)=>pt(i,v).map(n=>n.toFixed(1)).join(',')).join(' ');
-  const avgY = H-28-(s.avg/maxV)*(H-58);
+  const maxV = GLOBAL_MAX_PTS; // fixed across every player, so bar heights are directly comparable
+  const n = vals.length, innerW = W - pad*2, slot = innerW/n;
+  const bw = Math.max(2, slot - (n>30?1:n>18?2:4));
+  const baseY = H-28, scaleH = H-58;
+  const barX = i => pad + i*slot + (slot-bw)/2;
+  const avgY = baseY-(s.avg/maxV)*scaleH;
   // label density adapts to available width (~1 label per 62px)
-  const step = Math.max(1, Math.ceil(vals.length / Math.max(2, Math.floor((W-pad*2)/62))));
-  const r = W < 420 ? 3.4 : 4;
+  const step = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(innerW/62))));
   box.innerHTML = `<svg class="chart-svg" viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="${esc(curPlayer)}の得点推移">
-    <line x1="${pad}" y1="${H-28}" x2="${W-pad}" y2="${H-28}" stroke="var(--border)"/>
+    <line x1="${pad}" y1="${baseY}" x2="${W-pad}" y2="${baseY}" stroke="var(--border)"/>
     <line x1="${pad}" y1="${avgY.toFixed(1)}" x2="${W-pad}" y2="${avgY.toFixed(1)}" stroke="var(--wood)" stroke-dasharray="4 4" opacity=".7"/>
     <text x="${W-pad}" y="${(avgY-5).toFixed(1)}" text-anchor="end" class="axis-t" fill="var(--wood)">平均 ${s.avg.toFixed(1)}</text>
-    <polyline points="${line}" fill="none" stroke="var(--orange)" stroke-width="2.5" stroke-linejoin="round"/>
-    ${vals.map((v,i)=>{ const [x,y]=pt(i,v);
-      return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="var(--orange2)"><title>${esc(jd(s.app[i].date))} vs ${esc(s.app[i].opponent)}：${v}点</title></circle>`;}).join('')}
-    ${vals.map((v,i)=>{ if(i%step && i!==vals.length-1) return ''; const [x]=pt(i,v);
+    ${vals.map((v,i)=>{ const x=barX(i), h=(v/maxV)*scaleH, y=baseY-h;
+      return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${v>=10?'var(--win)':'var(--orange2)'}"><title>${esc(jd(s.app[i].date))} vs ${esc(s.app[i].opponent)}：${v}点</title></rect>`;}).join('')}
+    ${vals.map((v,i)=>{ if(i%step && i!==vals.length-1) return ''; const x=barX(i)+bw/2;
       return `<text x="${x.toFixed(1)}" y="${H-10}" text-anchor="middle" class="axis-t">${jd(s.app[i].date)}</text>`;}).join('')}
   </svg>`;
 }
