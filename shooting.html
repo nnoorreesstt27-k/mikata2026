@@ -102,6 +102,7 @@ input::placeholder{color:#6f85ab}
 /* ボール・選手・効果音は「おまけの設定」として囲んで区別する */
 .opts{position:relative;border:1px dashed rgba(126,176,255,.32);border-radius:14px;
   background:rgba(120,170,255,.06);padding:11px 9px 9px;margin-top:3px}
+.opt-row{margin-top:7px}
 .opt-ttl{position:absolute;top:-7px;left:11px;padding:0 6px;font:800 9px var(--font-b);letter-spacing:.16em;
   color:#9fc2f5;background:var(--panel);border-radius:6px}
 
@@ -175,6 +176,10 @@ input::placeholder{color:#6f85ab}
 .rk-name{font-weight:800;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rk-s{font:400 20px var(--font-d);white-space:nowrap}
 .rk-s small{font:800 11px var(--font-b);color:var(--ink-soft);margin-left:2px}
+.rk-admin{display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center;margin-bottom:2px}
+.rk-admin[hidden]{display:none}
+.rk-admin input{padding:7px 10px;font-size:14px;letter-spacing:.3em;text-align:center}
+.btn-sub.danger{border-color:rgba(255,120,110,.55);color:#ffb3aa;background:rgba(255,80,70,.12)}
 #rkMsg{font-size:14px;color:var(--ink-soft);text-align:center;font-weight:700;line-height:1.5}
 #rkMsg:empty{display:none}
 /* 画面が低いとき（iPhoneのブラウザなど）は、スクロールしないようにさらに詰める */
@@ -266,13 +271,8 @@ input::placeholder{color:#6f85ab}
       <div><span class="lbl">コート</span><div class="seg four" id="stageSeg"></div></div>
       <div class="opts">
         <span class="opt-ttl">オプション</span>
-        <div class="two-up">
-          <div><span class="lbl">ボール</span><div class="seg two green" id="ballSeg"></div></div>
-          <div class="stack">
-            <div><span class="lbl">選手</span><div class="seg green" id="playerSeg"></div></div>
-            <div><span class="lbl">効果音</span><div class="seg two green" id="sfxSeg"></div></div>
-          </div>
-        </div>
+        <div><span class="lbl">ボール</span><div class="seg four green" id="ballSeg"></div></div>
+        <div class="opt-row"><span class="lbl">選手</span><div class="seg green" id="playerSeg"></div></div>
       </div>
       <p class="err" id="nameErr"></p>
       <button class="btn-start" id="startBtn" type="button">スタート</button>
@@ -314,8 +314,13 @@ input::placeholder{color:#6f85ab}
       <div class="seg two" id="rkScope"></div>
       <ol id="rkList"></ol>
       <p id="rkMsg"></p>
+      <div class="rk-admin" id="rkAdmin" hidden>
+        <input id="rkPass" type="password" inputmode="numeric" maxlength="6" placeholder="パスワード6桁" autocomplete="off">
+        <button class="btn-sub danger" id="rkDo" type="button">実行</button>
+        <button class="btn-sub" id="rkCancel" type="button">やめる</button>
+      </div>
       <div class="row">
-        <button class="btn-sub" id="rkReload" type="button">読み込み直す</button>
+        <button class="btn-sub" id="rkReset" type="button">記録の初期化</button>
         <button class="btn-sub" id="rkBack" type="button">戻る</button>
       </div>
     </div>
@@ -520,7 +525,7 @@ if (LS.get('preset', 0) < 2){
 
 /* ---------- 状態 ---------- */
 const G = {
-  state:'title', spot:LS.get('spot','ft'), stage:LS.get('stage','gym'), ball:LS.get('ball','game'), sfx:LS.get('sfx','real'), player:LS.get('player','real'), time:GAME_TIME, sound:LS.get('sound',true), name:LS.get('name',''),
+  state:'title', spot:LS.get('spot','ft'), stage:LS.get('stage','gym'), ball:LS.get('ball','game'), sfx:'real', player:LS.get('player','real'), time:GAME_TIME, sound:LS.get('sound',true), name:LS.get('name',''),
   W:0, H:0, DPR:1, now:0,
   balls:[], parts:[], texts:[], flash:0, shake:0, netK:0, netPh:0, netSide:1, spotLight:0,
   charging:false, power:0, pdir:1, aimPhase:0, aim:0, nextBallT:0, padT:1, shootT:9, releaseT:0, shotPower:0, shotAim:0, shrink:0,
@@ -662,14 +667,14 @@ const SFX = {
         this.fanfare(); break;
       case 'count':
         if (this.recent('count')) break;
-        if (this.sample(this.real.count, .29)) break;      // 3.2.1 の音は40%下げ
-        if (this.waitSample('count', .29)) break;
-        this.tone(660,.12,'square',.06); break;
+        if (this.sample(this.real.count, .145)) break;     // 3.2.1 の音はさらに半分
+        if (this.waitSample('count', .145)) break;
+        this.tone(660,.12,'square',.03); break;
       case 'go':
         if (this.recent('go')) break;
-        if (this.sample(this.real.go, .30)) break;
-        if (this.waitSample('go', .30)) break;
-        this.tone(1320,.25,'square',.06); break;
+        if (this.sample(this.real.go, .15)) break;
+        if (this.waitSample('go', .15)) break;
+        this.tone(1320,.25,'square',.03); break;
       case 'board':
         if (this.realPlay('board', .9)) break;
         this.tone(150,.25,'sine',.45,0,90); this.hiss(.12,'lowpass',900,.7,.35,.002); break;
@@ -1199,7 +1204,7 @@ const SH_SRC_F = [
 'data:image/png;base64,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'];
 /* 選手のモーション。game＝3コマ、real/female＝5コマ */
 const SHOOTERS = {
-  game: {label:'ゲーム', src:SH_SRC_G, hm:2.30, ph:560, color:'#16252b', alpha:.94,
+  game: {label:'少年', src:SH_SRC_G, hm:2.30, ph:560, color:'#16252b', alpha:.94,
     relT:.15, endT:.65, set:0, idle:0, hand:0, relIdx:1, cut:true,
     seq:[[.15, 1], [.65, 2]],
     poses:[
@@ -1978,7 +1983,7 @@ function openRanking(from){
 async function renderRanking(){
   const key = keyOf(RK.time), list = $('rkList'), msg = $('rkMsg'), token = ++RK.token;
   list.innerHTML = ''; msg.textContent = '';
-  $('rkReload').style.visibility = RK.scope === 'all' && SHARED ? 'visible' : 'hidden';
+  $('rkReset').style.visibility = RK.scope === 'all' && SHARED ? 'visible' : 'hidden';
   let rows;
   if (RK.scope === 'local'){
     rows = cleanRows(LS.get('rank', {})[key]).sort(cmp).slice(0,10);
@@ -2034,7 +2039,8 @@ const spotSync = makeSeg($('spotSeg'), spotItems, () => G.spot, v => { G.spot = 
 $('spotHint').textContent = spotHintText();
 makeSeg($('ballSeg'), Object.entries(BALLS).map(([k, v]) => [k, v.label]), () => G.ball, v => { G.ball = v; LS.set('ball', v); });
 makeSeg($('playerSeg'), Object.entries(SHOOTERS).map(([k, v]) => [k, v.label]), () => G.player, v => { G.player = v; LS.set('player', v); });
-makeSeg($('sfxSeg'), Object.entries(SFX_KINDS).map(([k, v]) => [k, v.label]), () => G.sfx, v => { G.sfx = v; LS.set('sfx', v); SFX.init(); SFX.play('swish'); });
+/* 効果音の切り替えメニューは外してリアル固定。戻すときはTOPに sfxSeg を足して次の行を生かす */
+// makeSeg($('sfxSeg'), Object.entries(SFX_KINDS).map(([k, v]) => [k, v.label]), () => G.sfx, v => { G.sfx = v; LS.set('sfx', v); SFX.init(); SFX.play('swish'); });
 makeSeg($('stageSeg'), Object.entries(STAGES).map(([k, v]) => [k, v.ready ? v.label : v.label + '（準備中）', !v.ready]), () => G.stage, v => { G.stage = v; LS.set('stage', v); resize(); });
 
 const s1 = makeSeg($('rkScope'), [['all','みんな'],['local','この端末']], () => RK.scope, v => { RK.scope = v; renderRanking(); });
@@ -2064,7 +2070,29 @@ $('againBtn').addEventListener('click', () => { SFX.init(); startGame(); });
 $('toRankBtn').addEventListener('click', () => openRanking('result'));
 $('toTitleBtn').addEventListener('click', quitGame);
 $('rkBack').addEventListener('click', () => show(RK.from));
-$('rkReload').addEventListener('click', renderRanking);
+/* 記録の初期化（パスワードはサーバー側＝Apps Script で確認する） */
+$('rkReset').addEventListener('click', () => {
+  const a = $('rkAdmin'); a.hidden = !a.hidden;
+  $('rkMsg').textContent = ''; $('rkPass').value = '';
+  if (!a.hidden) $('rkPass').focus();
+});
+$('rkCancel').addEventListener('click', () => { $('rkAdmin').hidden = true; $('rkPass').value = ''; $('rkMsg').textContent = ''; });
+$('rkDo').addEventListener('click', async () => {
+  const pass = $('rkPass').value.trim(), msg = $('rkMsg');
+  if (!/^\d{6}$/.test(pass)){ msg.textContent = 'パスワードは数字6けたです'; return; }
+  $('rkDo').disabled = true; msg.textContent = '初期化しています…';
+  try{
+    const res = await api(RANKING_API, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'reset', pass})});
+    LS.set('rank', {}); LS.set('best', {}); G.lastEntry = null;      // この端末の記録も消す
+    $('rkAdmin').hidden = true; $('rkPass').value = '';
+    msg.textContent = `記録を初期化しました（${res.removed || 0}件）`;
+    setTimeout(renderRanking, 1200);
+  }catch(err){
+    msg.textContent = String(err && err.message) === 'bad_pass' ? 'パスワードが違います' : '初期化できませんでした。電波のいい場所でもう一度お試しください';
+  }finally{ $('rkDo').disabled = false; }
+});
+$('rkPass').addEventListener('keydown', e => { if (e.key === 'Enter') $('rkDo').click(); });
 
 window.addEventListener('resize', resize);
 if (document.fonts && document.fonts.load){ document.fonts.load(`40px ${FONT_D}`).catch(() => {}); }
