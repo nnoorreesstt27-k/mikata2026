@@ -366,14 +366,12 @@ footer{margin-top:34px;text-align:center;font-size:11px;color:var(--dim);letter-
     <option value="team" selected>🏆 チーム成績</option>
     <option value="games">📅 試合別成績</option>
     <option value="player">👤 個人成績</option>
-    <option value="rank">📊 ランキング</option>
   </select>
 </div>
 <nav class="tabs" role="tablist">
   <button class="on" data-tab="team" role="tab">🏆 チーム成績</button>
   <button data-tab="games" role="tab">📅 試合別成績</button>
   <button data-tab="player" role="tab">👤 個人成績</button>
-  <button data-tab="rank" role="tab">📊 ランキング</button>
 </nav>
 
 <!-- ===== TEAM TAB ===== -->
@@ -427,23 +425,6 @@ footer{margin-top:34px;text-align:center;font-size:11px;color:var(--dim);letter-
       <tbody></tbody>
     </table></div>
   </div>
-</div>
-
-<!-- ===== RANKING TAB ===== -->
-<div id="tab-rank" class="tab-page hidden">
-  <div class="pills" id="rankScopePills"></div>
-  <div class="grid2">
-    <div class="card"><h2>総得点</h2><div id="rankPts"></div></div>
-    <div class="card"><h2>平均得点/試合</h2><div id="rankAvg"></div></div>
-    <div class="card"><h2>2桁得点回数</h2><div id="rankDouble"></div></div>
-    <div class="card"><h2>最多得点試合数</h2><div id="rankTopScorer"></div></div>
-    <div class="card"><h2>自己ベスト（1試合最多得点）</h2><div id="rankBest"></div></div>
-    <div class="card"><h2>出場試合数（欠席日以外をカウント）</h2><div id="rankGames"></div></div>
-    <div class="card"><h2>総ファウル数</h2><div id="rankF"></div></div>
-    <div class="card"><h2>平均ファウル数/試合</h2><div id="rankFPG"></div></div>
-    <div class="card"><h2>退場回数（1試合5ファウル以上）</h2><div id="rankEjection"></div></div>
-  </div>
-  <p class="footnote">※出場試合数は、欠席の日を除く試合数の合計です　※クォーター途中で交代した場合は、残分に関わらず出場クォーター0.5とカウントしています</p>
 </div>
 
 <!-- ===== GAMES TAB ===== -->
@@ -957,7 +938,7 @@ $('#homeLink').addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ')
 /* ---------- boot ---------- */
 function renderAll(){
   renderScoreboard(); renderMarginChart(); renderTopGamesTable(); renderTypes();
-  renderPlayerTab(); renderRankScopePills(); renderRankings(); renderGameFilters(); renderGamesTable();
+  renderPlayerTab(); renderGameFilters(); renderGamesTable();
   renderGameSelector();
 }
 renderAll();
